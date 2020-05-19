@@ -1,0 +1,7 @@
+https://github.com/Lycreal/python-mirai/archive/v0.3.3_fix.zip
+pillow==7.1.2
+
+# pytest
+# pytest-asyncio
+# pytest-cov
+# coverage<5

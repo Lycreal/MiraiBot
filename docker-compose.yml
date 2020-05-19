@@ -1,0 +1,31 @@
+version: "3.5"
+services:
+  mirai:
+    image: openjdk:8-jre-alpine
+    expose:
+      - "8081"
+    volumes:
+      - "/root/mirai:/root/mirai"
+    networks:
+      - net
+    command: ["/bin/sh", "/root/mirai/run.sh"]
+
+  qbot:
+    build:
+      context: ./qbot
+    environment:
+      - host=mirai
+      - port=8081
+      - qq=123456
+      - authKey=qwerty1234
+      - setu_apikey=
+    volumes:
+      - "./src:/root/mirai/qbot"
+    depends_on:
+      - mirai
+    networks:
+      - net
+    command: ["sh", "-c", "cd /root/mirai && python3 -m qbot"]
+
+networks:
+  net:
