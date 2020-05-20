@@ -12,7 +12,7 @@ services:
 
   qbot:
     build:
-      context: .
+      context: ./build
     environment:
       - host=mirai
       - port=8081
