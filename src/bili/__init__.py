@@ -40,4 +40,7 @@ async def GMHandler(group: Group, member: Member, message: GroupMessage):
         else None
     if match and command and bili_pattern.search(message.toString()):
         uid_list: List[int] = bili_pattern.findall(message.toString())
-        await command(*uid_list)
+        try:
+            await command(message, *uid_list)
+        except Exception as e:
+            Event.error(e)
