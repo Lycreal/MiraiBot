@@ -38,6 +38,6 @@ async def GMHandler(group: Group, member: Member, message: GroupMessage):
     command = Command.add if add_pattern.search(message.toString()) \
         else Command.remove if del_pattern.search(message.toString()) \
         else None
-    if match and command and bili_pattern.match(message.toString()):
+    if match and command and bili_pattern.search(message.toString()):
         uid_list: List[int] = bili_pattern.findall(message.toString())
         await command(*uid_list)
