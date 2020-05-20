@@ -56,7 +56,7 @@ class SetuData(BaseModel):
 
 
 class SetuDatabase(BaseModel):
-    __root__: Set[SetuData] = []
+    __root__: Set[SetuData] = set()
 
     @classmethod
     def load_from_file(cls):
