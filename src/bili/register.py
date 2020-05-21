@@ -67,7 +67,7 @@ class Database(BaseModel):
     def add(cls, *data_array: Target):
         db: cls = cls.load()
         for data in data_array:
-            for i, saved_target in enumerate(db.__root__):
+            for saved_target in db.__root__:
                 if saved_target == data:
                     saved_target.groups.update(data.groups)
                     break
@@ -80,7 +80,7 @@ class Database(BaseModel):
     def remove(cls, *data_array: Target):
         db: cls = cls.load()
         for data in data_array:
-            for i, saved_target in enumerate(db.__root__):
+            for saved_target in db.__root__:
                 if saved_target == data:
                     [saved_target.groups.discard(group) for group in data.groups]
                     break

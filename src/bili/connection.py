@@ -16,7 +16,7 @@ async def GetDynamicStatus(uid: int, debug=0):
             break
     else:
         LAST[uid] = cards_data[0]['desc']['dynamic_id']
-        return
+        return  # 没有找到上次动态，可能为初次运行或被删除
 
     if debug:
         i = debug
@@ -26,7 +26,7 @@ async def GetDynamicStatus(uid: int, debug=0):
         card = Card(Card.deep_decode(cards_data[i - 1]))
         return card.toString()
     else:
-        return ''
+        return ''  # 没有新动态
 
 
 async def getCards(uid: int) -> T.List[dict]:

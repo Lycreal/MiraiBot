@@ -7,10 +7,10 @@ from ..app import app
 
 async def execute(delay: float):
     while True:
-        await asyncio.sleep(delay)
         for target in Database.load().__root__:
             if target.groups:
                 try:
+                    await asyncio.sleep(delay)
                     msg = await GetDynamicStatus(target.uid)
                     Event.info(f'已查询{target.name}，信息：{msg}')
                 except Exception as e:
