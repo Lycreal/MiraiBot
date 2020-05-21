@@ -73,7 +73,7 @@ async def sendSetu(message: GroupMessage, data_array: List[SetuData], number: in
 
     tasks: List[asyncio.Task] = []
     for i, data in enumerate(random.sample(data_array, k=number)):
-        prefix = f'[{i}/{number}]' if number > 1 else ''
+        prefix = f'[{i + 1}/{number}]' if number > 1 else ''
         task = asyncio.create_task(send(prefix, data))
         tasks.append(task)
         await asyncio.sleep(5)
