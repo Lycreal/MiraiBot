@@ -23,7 +23,7 @@ async def GetDynamicStatus(uid: int, debug=0):
 
     if i >= 1:
         LAST[uid] = cards_data[i - 1]['desc']['dynamic_id']
-        return CardData(card_data).resolve()
+        return CardData(cards_data[i - 1]).resolve()
     else:
         return '', []  # 没有新动态
 
