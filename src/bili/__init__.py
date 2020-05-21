@@ -19,6 +19,7 @@ class Command:
             return None
         for cmd, pattern in cmd_table.items():
             if pattern.search(msg):
+                Event.info(f'Handled 「{msg}」as a command')
                 return cmd
         else:
             return None
@@ -56,7 +57,7 @@ class Command:
 async def GMHandler(group: Group, member: Member, message: GroupMessage):
     command = Command.getCommand(message.toString())
     bili_pattern = re.compile(r'space.bilibili.com/(\d+)')
-    if command and bili_pattern.search(message.toString()):
+    if command:
         uid_list: T.List[int] = bili_pattern.findall(message.toString())
         try:
             await command(message, *uid_list)
