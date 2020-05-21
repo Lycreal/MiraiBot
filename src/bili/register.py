@@ -88,3 +88,9 @@ class Database(BaseModel):
                 pass
         db.save_to_file()
         return [target.name for target in data_array]
+
+    @classmethod
+    def show(cls, group_id: int):
+        db: cls = cls.load()
+        ret = [saved_target.name for saved_target in db.__root__ if group_id in saved_target.groups]
+        return ret
