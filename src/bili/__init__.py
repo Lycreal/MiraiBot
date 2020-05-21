@@ -1,8 +1,10 @@
 import re
+import asyncio
 import typing as T
 from mirai import Group, Member, GroupMessage
 from mirai.logger import Event
 from .register import Target, Database, Platform
+from .execute import execute
 from ..app import app
 
 
@@ -53,8 +55,15 @@ class Command:
                                    quoteSource=message.messageChain.getSource())
 
 
+ACTIVATED = False
+
+
 @app.receiver("GroupMessage")
 async def GMHandler(group: Group, member: Member, message: GroupMessage):
+    global ACTIVATED
+    if not ACTIVATED:
+        asyncio.create_task(execute(15))
+        ACTIVATED = True
     command = Command.getCommand(message.toString())
     bili_pattern = re.compile(r'space.bilibili.com/(\d+)')
     if command:
