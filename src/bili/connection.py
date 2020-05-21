@@ -1,12 +1,15 @@
 import json
 import typing as T
 import aiohttp
+from collections import namedtuple
 
 # {uid:dynamic_id}
 LAST: T.Dict[int, int] = {}
 
+Resp = namedtuple('Resp', 'msg imgs dynamic_id')
 
-async def GetDynamicStatus(uid: int, debug=0):
+
+async def GetDynamicStatus(uid: int, debug=0) -> T.Optional[Resp]:
     cards_data = await getCards(uid)
 
     last_dynamic = LAST.setdefault(uid, cards_data[0]['desc']['dynamic_id'])
@@ -16,7 +19,7 @@ async def GetDynamicStatus(uid: int, debug=0):
             break
     else:  # 没有找到上次动态，可能为程序初次运行或动态被删除
         LAST[uid] = cards_data[0]['desc']['dynamic_id']
-        return '', []
+        return None
 
     if debug:
         i = debug
@@ -25,7 +28,7 @@ async def GetDynamicStatus(uid: int, debug=0):
         LAST[uid] = cards_data[i - 1]['desc']['dynamic_id']
         return CardData(cards_data[i - 1]).resolve()
     else:
-        return '', []  # 没有新动态
+        return None  # 没有新动态
 
 
 async def getCards(uid: int) -> T.List[dict]:
@@ -45,15 +48,14 @@ class CardData(dict):
         obj['card'] = deep_decode(obj['card'])
         super(CardData, self).__init__(obj)
 
-    def resolve(self) -> T.Tuple[str, T.List[str]]:
+    def resolve(self) -> Resp:
         name = self["desc"]["user_profile"]["info"]["uname"]
         type = self['desc']['type']
         origin_name = self['card']['origin_user']['info']['uname'] if type == 1 else None
         origin_type = self['desc']['origin']['type'] if type == 1 else None
 
         msg, imgs = Card(self['card'], type).resolve(name, type, origin_name, origin_type)
-        msg += f"\n\n本条动态的地址为: https://t.bilibili.com/{self['desc']['dynamic_id']}"
-        return msg, imgs
+        return Resp(msg, imgs, self['desc']['dynamic_id'])
 
 
 def deep_decode(j: T.Union[dict, str]):
