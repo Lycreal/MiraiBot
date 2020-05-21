@@ -61,19 +61,20 @@ async def sendSetu(message: GroupMessage, data_array: List[SetuData], number: in
     group: Group = message.sender.group
     source: Source = message.messageChain.getSource()
 
-    async def send(_data: SetuData):
+    async def send(_prefix: str, _data: SetuData):
         try:
             setu_b: bytes = await _data.get(check_size=False)
-            await app.sendGroupMessage(group, [Plain(_data.purl), Image.fromBytes(setu_b)], source)
-            Event.info(f"发送了1张色图，标签：{','.join(_data.tags)}")
+            await app.sendGroupMessage(group, [Plain(_prefix), Plain(_data.purl), Image.fromBytes(setu_b)], source)
+            Event.info(f"{_prefix}色图已发送，标签：{','.join(_data.tags)}")
         except (asyncio.TimeoutError, UnidentifiedImageError, ValueError) as e:
             Event.warn(e)
 
     number = min(number, len(data_array))
 
     tasks: List[asyncio.Task] = []
-    for data in random.sample(data_array, k=number):
-        task = asyncio.create_task(send(data))
+    for i, data in enumerate(random.sample(data_array, k=number)):
+        prefix = f'[{i + 1}/{number}]' if number > 1 else ''
+        task = asyncio.create_task(send(prefix, data))
         tasks.append(task)
         await asyncio.sleep(5)
     done, pending = await asyncio.wait(tasks, timeout=10)
