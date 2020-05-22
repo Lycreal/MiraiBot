@@ -8,11 +8,15 @@ from ..app import app
 
 async def execute(delay: float):
     while True:
+        if not (hasattr(app, 'enabled') and app.enabled):
+            await asyncio.sleep(delay)
+            continue
         for target in Database.load().__root__:
             if target.groups:
                 try:
                     await asyncio.sleep(delay)
                     resp = await GetDynamicStatus(target.uid)
+                    Event.info(f'动态检查：{target.name}')
                 except Exception as e:
                     Event.error(e)
                     continue
@@ -24,3 +28,7 @@ async def execute(delay: float):
                                  [Plain(footer)]
                     for group_id in target.groups:
                         await app.sendGroupMessage(group=group_id, message=components)
+
+
+loop = asyncio.get_event_loop()
+loop.create_task(execute(15))
