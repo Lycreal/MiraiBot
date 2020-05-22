@@ -6,24 +6,29 @@ from .register import Target, Database, Platform
 from .execute import execute
 from ..app import app
 
+cmd_T = T.Callable[[GroupMessage, T.Tuple[int]], T.Coroutine[T.Any, T.Any, None]]
+
 
 class Command:
     @classmethod
-    def getCommand(cls, msg: str):
-        command_pattern = re.compile(r'动态监控')
-        cmd_table: T.Dict[T.Callable[[GroupMessage, T.Tuple[int, ...]], T.Coroutine], T.Pattern[str]] = {
-            cls.add: re.compile(r'新增|增|添|加'),
-            cls.remove: re.compile(r'取消|删|减|除'),
-            cls.show: re.compile(r'显示|列表')
-        }
-        if not command_pattern.search(msg):
-            return None
-        for cmd, pattern in cmd_table.items():
-            if pattern.search(msg):
-                Event.info(f'Handled 「{msg}」as a command')
-                return cmd
+    def getCommand(cls, msg: str) -> T.Tuple[T.Optional[cmd_T], T.List[int]]:
+        COMMAND = re.compile(r'动态监控').search(msg)
+        ADD = re.compile(r'新增|增|添|加').search(msg)
+        RM = re.compile(r'取消|删|减|除').search(msg)
+        SHOW = re.compile(r'显示|列表').search(msg)
+        uid_list = re.compile(r'space.bilibili.com/(\d+)').findall(msg)
+        if not COMMAND:
+            return None, uid_list
+        elif not uid_list:
+            return cls.show, uid_list
+        elif ADD:
+            return cls.add, uid_list
+        elif RM:
+            return cls.remove, uid_list
+        elif SHOW:
+            return cls.show, uid_list
         else:
-            return None
+            return cls.show, uid_list
 
     @staticmethod
     async def add(message: GroupMessage, *uid_list: int):
@@ -56,10 +61,8 @@ class Command:
 
 @app.receiver("GroupMessage")
 async def GMHandler(group: Group, member: Member, message: GroupMessage):
-    command = Command.getCommand(message.toString())
-    bili_pattern = re.compile(r'space.bilibili.com/(\d+)')
+    command, uid_list = Command.getCommand(message.toString())
     if command:
-        uid_list: T.List[int] = bili_pattern.findall(message.toString())
         try:
             await command(message, *uid_list)
         except Exception as e:
