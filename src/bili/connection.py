@@ -82,36 +82,36 @@ class Card(dict):
             self.title = self.get('title')
             self.pic = self.get('pic')
         elif c_type == 64:
-            self.dynamic = self.get('dynamic')
+            self.dynamic = self.get('dynamic', '')
             self.title = self.get('title')
             self.banner_url = self.get('banner_url')
         elif c_type == 4200:
             self.roomid = self.get('roomid')
-            self.cover = self.get('user_cover') or self.get(['cover'])
+            self.cover = self.get('user_cover') or self.get('cover')
             self.title = self.get('title')
 
     def resolve(self, name: str, c_type: int, origin_name: str = 0, origin_type: int = 0) -> T.Tuple[str, T.List[str]]:
         img_urls = []
         if c_type == 1:  # 转发
-            msg = f'{name}的转发：{self.content}\n原动态：'
+            msg = f'(转发){name}：{self.content}\n{"=" * 20}\n'
             msg_a, img_urls_a = Card(self['origin'], origin_type).resolve(origin_name, origin_type)
             msg += msg_a
             img_urls += img_urls_a
         elif c_type == 2:  # 图片动态
-            msg = f'{name}的新动态：{self.description}'
+            msg = f'(动态){name}：\n{self.description}'
             img_urls += [pic_info['img_src'] for pic_info in self['item']['pictures']]
         elif c_type == 4:  # 文字动态
-            msg = f'{name}的新动态：{self.content}'
+            msg = f'(动态){name}：\n{self.content}'
         elif c_type == 8:  # 视频动态
-            msg = f'{name}的新视频「{self.title}」：{self.dynamic}'
+            msg = f'(视频){name}：「{self.title}」\n{self.dynamic}'
             img_urls += [self.pic]
         elif c_type == 64:  # 专栏动态
-            msg = f'{name}的新专栏「{self.title}」：{self.dynamic}'
+            msg = f'(专栏){name}：「{self.title}」\n{self.dynamic}'
             img_urls += [self.banner_url]
         elif c_type == 2048:  # 头像框动态
-            msg = '头像框动态'
+            msg = '(头像框动态)'
         elif c_type == 4200:  # 直播间动态
-            msg = f'{name}的直播间：{self.title} https://live.bilibili.com/{self.roomid}'
+            msg = f'(直播){name}：{self.title} https://live.bilibili.com/{self.roomid}'
             img_urls += [self.cover]
         else:  # 未知
             msg = '未知动态类型'
