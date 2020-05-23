@@ -41,7 +41,10 @@ async def setuExecutor(app: Mirai, message: GroupMessage, number: int, keyword: 
     """根据关键词获取data_array，并调用sendSetu"""
     member_id: int = message.sender.id
     if keyword == '':
-        resp: SetuResp = SetuResp(code=-430, msg='空关键词')
+        if len(SetuDatabase.load_from_file().__root__) >= 300:
+            resp: SetuResp = SetuResp(code=-430, msg='空关键词')
+        else:
+            resp: SetuResp = await SetuResp.get()
     elif cd.check(member_id):
         resp: SetuResp = await SetuResp.get(keyword)
     else:
