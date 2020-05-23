@@ -12,4 +12,6 @@ params = {
 
 app = Mirai(**params)
 load_plugins(app)
-app.run()
+
+if __name__ == '__main__':
+    app.run()
