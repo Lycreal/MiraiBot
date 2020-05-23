@@ -50,9 +50,9 @@ class CardData(dict):
 
     def resolve(self) -> Resp:
         name = self["desc"]["user_profile"]["info"]["uname"]
-        type = self['desc']['type']
+        c_type = self['desc']['type']
 
-        msg, imgs = Card(self['card'], name, type).resolve()
+        msg, imgs = Card(self['card'], name, c_type).resolve()
         return Resp(msg, imgs, self['desc']['dynamic_id'])
 
 
