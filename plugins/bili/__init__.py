@@ -78,10 +78,11 @@ async def GMHandler(app: Mirai, message: GroupMessage):
 async def execute(app: Mirai):
     delay = 10
     while True:
-        if not (hasattr(app, 'enabled') and app.enabled):
+        targets = Database.load().__root__
+        if not targets:
             await asyncio.sleep(delay)
             continue
-        for target in Database.load().__root__:
+        for target in targets:
             if target.groups:
                 try:
                     await asyncio.sleep(delay)
