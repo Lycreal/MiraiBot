@@ -87,6 +87,9 @@ class Card(dict):
             self.dynamic = self.get('dynamic', '')
             self.title = self.get('title')
             self.banner_url = self.get('banner_url')
+        elif c_type == 2048:
+            self.content = self['vest'].get('content')
+            self.title = self['sketch'].get('title')
         elif c_type == 4200:
             self.roomid = self.get('roomid')
             self.cover = self.get('user_cover') or self.get('cover')
@@ -106,7 +109,7 @@ class Card(dict):
                 msg += msg_a
                 img_urls = img_urls_a
             elif self.c_type == 2:  # 图片动态
-                msg = f'(动态){self.name}：\n{self.description}\n'
+                msg = f'(动态){self.name}：\n{self.description}'
                 img_urls = [pic_info['img_src'] for pic_info in self['item']['pictures']]
             elif self.c_type == 4:  # 文字动态
                 msg = f'(动态){self.name}：\n{self.content}'
@@ -117,8 +120,8 @@ class Card(dict):
             elif self.c_type == 64:  # 专栏动态
                 msg = f'(专栏){self.name}：《{self.title}》\n{self.dynamic}'
                 img_urls = [self.banner_url]
-            elif self.c_type == 2048:  # 头像框动态
-                msg = f'{self.name}：(头像框动态)'
+            elif self.c_type == 2048:  # 特殊动态类型（头像框、直播日历等）
+                msg = f'(动态){self.name}：{self.content}\n{self.title}'
                 img_urls = []
             elif self.c_type == 4200:  # 直播间动态
                 msg = f'(直播){self.name}：{self.title} https://live.bilibili.com/{self.roomid}'
@@ -129,4 +132,6 @@ class Card(dict):
         except (TypeError, KeyError):
             msg = f'{self.name}：(动态类型{self.c_type}，解析失败)'
             img_urls = []
+        if not msg.endswith('\n') and img_urls:
+            msg += '\n'
         return msg, img_urls
