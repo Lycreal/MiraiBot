@@ -13,19 +13,18 @@ services:
   qbot:
     build:
       context: ./build
+    env_file:
+      - bot.env
     environment:
       - host=mirai
       - port=8081
-      - qq=123456
-      - authKey=qwerty1234
-      - setu_apikey=
     volumes:
-      - "./src:/root/mirai/qbot"
+      - ".:/root/qbot"
     depends_on:
       - mirai
     networks:
       - net
-    command: ["sh", "-c", "cd /root/mirai && python3 -m qbot"]
+    command: python3 /root/qbot/run.py
 
 networks:
   net:

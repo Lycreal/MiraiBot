@@ -1,44 +1,50 @@
-import re
 import asyncio
 import random
+import re
 from typing import List
+
 from PIL import UnidentifiedImageError
-from mirai import Group, Member, GroupMessage, Image, Plain
-from mirai.logger import Event
+from mirai import Mirai, Group, GroupMessage, Image, Plain
 from mirai.event.message.chain import Source
+from mirai.logger import Event as EventLogger
+
 from .SetuData import SetuData, SetuResp, SetuDatabase
 from .utils import CoolDown, shuzi2number
-from ..app import app
 
 cd = CoolDown(app='setu', td=20)
 
+sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
-@app.receiver("GroupMessage")
-async def GMHandler(group: Group, member: Member, message: GroupMessage):
+
+@sub_app.receiver("GroupMessage")
+async def GMHandler(app: Mirai, message: GroupMessage):
     match = re.match(r'(?:.*?([\d一二两三四五六七八九十]*)张|来点)?(.{0,10}?)的?色图$', message.toString())
     if match:
         number = shuzi2number(match[1])
         keyword = match[2]
         try:
-            await setuExecutor(message, number, keyword)
+            await setuExecutor(app, message, number, keyword)
         except Exception as e:
-            Event.warn(repr(e))
+            EventLogger.warn(repr(e))
     elif message.toString() == '色图配额':
-        await checkQuota(message)
+        await checkQuota(app, message)
 
 
-async def checkQuota(message: GroupMessage):
+async def checkQuota(app: Mirai, message: GroupMessage):
     resp = await SetuResp.get('色图配额')
     await app.sendGroupMessage(group=message.sender.group,
                                message=f'剩余配额：{resp.quota}\n恢复时间：{resp.time_to_recover.strftime("%m-%d %H:%M")}',
                                quoteSource=message.messageChain.getSource())
 
 
-async def setuExecutor(message: GroupMessage, number: int, keyword: str):
+async def setuExecutor(app: Mirai, message: GroupMessage, number: int, keyword: str):
     """根据关键词获取data_array，并调用sendSetu"""
     member_id: int = message.sender.id
     if keyword == '':
-        resp: SetuResp = SetuResp(code=-430, msg='空关键词')
+        if len(SetuDatabase.load_from_file().__root__) >= 300:
+            resp: SetuResp = SetuResp(code=-430, msg='空关键词')
+        else:
+            resp: SetuResp = await SetuResp.get()
     elif cd.check(member_id):
         resp: SetuResp = await SetuResp.get(keyword)
     else:
@@ -46,17 +52,17 @@ async def setuExecutor(message: GroupMessage, number: int, keyword: str):
 
     if resp.code == 0:
         cd.update(member_id)
-        await sendSetu(message, resp.data, number)
+        await sendSetu(app, message, resp.data, number)
     elif resp.code in [429, -430]:
         db = SetuDatabase.load_from_file()
-        await sendSetu(message, db.__root__, number)
+        await sendSetu(app, message, db.__root__, number)
     else:
         group: Group = message.sender.group
         source: Source = message.messageChain.getSource()
         await app.sendGroupMessage(group, resp.msg, source)
 
 
-async def sendSetu(message: GroupMessage, data_array: List[SetuData], number: int):
+async def sendSetu(app: Mirai, message: GroupMessage, data_array: List[SetuData], number: int):
     """发送data_array"""
     group: Group = message.sender.group
     source: Source = message.messageChain.getSource()
@@ -64,10 +70,12 @@ async def sendSetu(message: GroupMessage, data_array: List[SetuData], number: in
     async def send(_prefix: str, _data: SetuData):
         try:
             setu_b: bytes = await _data.get(check_size=False)
-            await app.sendGroupMessage(group, [Plain(_prefix), Plain(_data.purl), Image.fromBytes(setu_b)], source)
-            Event.info(f"{_prefix}色图已发送，标签：{','.join(_data.tags)}")
+            await app.sendGroupMessage(group,
+                                       [Plain(_prefix), Plain(_data.purl + '\n'), Image.fromBytes(setu_b)],
+                                       source)
+            EventLogger.info(f"{_prefix}色图已发送，标签：{','.join(_data.tags)}")
         except (asyncio.TimeoutError, UnidentifiedImageError, ValueError) as e:
-            Event.warn(e)
+            EventLogger.warn(e)
 
     number = min(number, len(data_array))
 
@@ -76,7 +84,7 @@ async def sendSetu(message: GroupMessage, data_array: List[SetuData], number: in
         prefix = f'[{i + 1}/{number}]' if number > 1 else ''
         task = asyncio.create_task(send(prefix, data))
         tasks.append(task)
-        await asyncio.sleep(5)
+        await asyncio.wait(tasks, timeout=5)
     done, pending = await asyncio.wait(tasks, timeout=10)
     if pending:
         [t.cancel() for t in pending]
