@@ -7,7 +7,7 @@ from mirai import Mirai, GroupMessage, Plain, Image
 from mirai.logger import Event as EventLogger
 
 from .register import Target, Database, Platform
-from .connection import GetDynamicStatus
+from .connection import getDynamicStatus
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
@@ -85,7 +85,7 @@ async def execute(app: Mirai):
             if target.groups:
                 try:
                     await asyncio.sleep(delay)
-                    resp = await GetDynamicStatus(target.uid)
+                    resp = await getDynamicStatus(target.uid)
                     EventLogger.info(f'动态检查：{target.name}')
                 except Exception as e:
                     EventLogger.error(e)

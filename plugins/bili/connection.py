@@ -9,7 +9,7 @@ LAST: T.Dict[int, int] = {}
 Resp = namedtuple('Resp', 'msg imgs dynamic_id')
 
 
-async def GetDynamicStatus(uid: int, debug=0) -> T.Optional[Resp]:
+async def getDynamicStatus(uid: int, debug=0) -> T.Optional[Resp]:
     cards_data = await getCards(uid)
 
     last_dynamic = LAST.setdefault(uid, cards_data[0]['desc']['dynamic_id'])
