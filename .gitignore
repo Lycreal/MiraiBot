@@ -2,7 +2,7 @@
 
 .idea/
 test/
-
+bot.env
 
 ### VirtualEnv template
 # Virtualenv
