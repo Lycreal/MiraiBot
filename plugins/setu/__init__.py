@@ -25,7 +25,8 @@ async def GMHandler(app: Mirai, message: GroupMessage):
         try:
             await setuExecutor(app, message, number, keyword)
         except Exception as e:
-            EventLogger.warn(repr(e))
+            EventLogger.warn(e)
+            EventLogger.exception(e)
     elif message.toString() == '色图配额':
         await checkQuota(app, message)
 

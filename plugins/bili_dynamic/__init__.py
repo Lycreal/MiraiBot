@@ -38,7 +38,7 @@ class Command:
     @staticmethod
     async def add(app: Mirai, message: GroupMessage, *uid_list: int):
         group_id = message.sender.group.id
-        names = Database.add(*[await Target.init(uid, Platform.bili, group_id) for uid in uid_list])
+        names = Database.add(*[await Target.init(uid, Platform.bili_dynamic, group_id) for uid in uid_list])
         EventLogger.info(f'群「{message.sender.group.name}」增加动态监控：{",".join(names)}')
         await app.sendGroupMessage(group=message.sender.group,
                                    message=f'增加动态监控：{",".join(names)}',
@@ -47,7 +47,7 @@ class Command:
     @staticmethod
     async def remove(app: Mirai, message: GroupMessage, *uid_list: int):
         group_id = message.sender.group.id
-        names = Database.remove(*[await Target.init(uid, Platform.bili, group_id) for uid in uid_list])
+        names = Database.remove(*[await Target.init(uid, Platform.bili_dynamic, group_id) for uid in uid_list])
         EventLogger.info(f'群「{message.sender.group.name}」移除动态监控：{",".join(names)}')
         await app.sendGroupMessage(group=message.sender.group,
                                    message=f'移除动态监控：{",".join(names)}',
@@ -72,6 +72,7 @@ async def GMHandler(app: Mirai, message: GroupMessage):
             await command(app, message, *uid_list)
         except Exception as e:
             EventLogger.error(e)
+            EventLogger.exception(e)
 
 
 @sub_app.subroutine

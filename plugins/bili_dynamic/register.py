@@ -5,11 +5,14 @@ from pathlib import Path
 from pydantic import BaseModel, ValidationError
 import aiohttp
 
-SAVE_FILE = Path(__file__).parent.joinpath('register.json')
+from run import data_path
+
+Path(data_path).mkdir(exist_ok=True)
+SAVE_FILE = Path(data_path).joinpath('bili_dynamic.json')
 
 
 class Platform(Enum):
-    bili = 'bili'
+    bili_dynamic = 'bili_dynamic'
 
 
 class Target(BaseModel):
@@ -20,7 +23,7 @@ class Target(BaseModel):
 
     @classmethod
     async def init(cls, uid: T.Union[int, str], platform: Platform, group_id: int):
-        if platform == Platform.bili:
+        if platform == Platform.bili_dynamic:
             url = f'https://api.bilibili.com/x/space/acc/info?mid={uid}'
             async with aiohttp.request('GET', url) as resp:
                 name = (await resp.json(encoding='utf8'))['data']['name']

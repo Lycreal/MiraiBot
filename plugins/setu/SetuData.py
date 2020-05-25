@@ -10,7 +10,10 @@ from datetime import datetime, timedelta
 from pydantic import BaseModel, validator, ValidationError
 from urllib.parse import urlparse
 
-SAVE_FILE = Path(__file__).parent.joinpath('setu.json')
+from run import data_path
+
+Path(data_path).mkdir(exist_ok=True)
+SAVE_FILE = Path(data_path).joinpath('setu.json')
 
 
 class SetuData(BaseModel):

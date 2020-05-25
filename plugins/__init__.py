@@ -1,13 +1,18 @@
+import os
+import re
 import importlib
 from pathlib import Path
 from mirai import Mirai
 from mirai.logger import Session as SessionLogger
 
 
-def load_plugins(app: Mirai):
+def load_plugins(app: Mirai, *debug: str):
     plugin_dir = Path(__file__).parent
     module_prefix = plugin_dir.name
 
+    if debug:
+        [load_plugin(app, f'{module_prefix}.{p}') for p in debug]
+        return
     for plugin in plugin_dir.iterdir():
         if plugin.is_dir() \
                 and not plugin.name.startswith('_') \
@@ -24,3 +29,10 @@ def load_plugin(app: Mirai, module_path: str):
     except Exception as e:
         SessionLogger.error(f'Failed to import "{module_path}", error: {e}')
         SessionLogger.exception(e)
+
+
+def load_env(path):
+    with open(path, 'r', encoding='utf8') as f:
+        for match in re.finditer(r'^(.*)=[\'\"]?(.*?)[\'\"]?$', f.read(), re.MULTILINE):
+            k, v = match.groups()
+            os.environ.setdefault(k, v)

@@ -3,6 +3,7 @@
 .idea/
 test/
 bot.env
+data/
 
 ### VirtualEnv template
 # Virtualenv
