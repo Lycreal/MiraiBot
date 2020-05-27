@@ -1,7 +1,7 @@
 import asyncio
 import random
 import re
-from typing import List
+from typing import List, Set, Union
 
 from PIL import UnidentifiedImageError
 from mirai import Mirai, Group, GroupMessage, Image, Plain
@@ -63,7 +63,7 @@ async def setuExecutor(app: Mirai, message: GroupMessage, number: int, keyword: 
         await app.sendGroupMessage(group, resp.msg, source)
 
 
-async def sendSetu(app: Mirai, message: GroupMessage, data_array: List[SetuData], number: int):
+async def sendSetu(app: Mirai, message: GroupMessage, data_array: Union[Set[SetuData], List[SetuData]], number: int):
     """发送data_array"""
     group: Group = message.sender.group
     source: Source = message.messageChain.getSource()

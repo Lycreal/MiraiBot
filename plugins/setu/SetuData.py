@@ -62,19 +62,19 @@ class SetuDatabase(BaseModel):
     __root__: Set[SetuData] = set()
 
     @classmethod
-    def load_from_file(cls):
+    def load_from_file(cls) -> "SetuDatabase":
         try:
             db: cls = cls.parse_file(SAVE_FILE)
         except (FileNotFoundError, json.JSONDecodeError, ValidationError):
             db: cls = cls()
         return db
 
-    def save_to_file(self):
+    def save_to_file(self) -> None:
         with SAVE_FILE.open('w', encoding='utf8') as f:
             json.dump([data.dict() for data in self.__root__], f, ensure_ascii=False, indent=2)
 
     @classmethod
-    def save(cls, *data_array: SetuData):
+    def save(cls, *data_array: SetuData) -> None:
         db: cls = cls.load_from_file()
         for data in data_array:
             db.__root__.discard(data)
@@ -96,11 +96,11 @@ class SetuResp(BaseModel):
         quota_min_ttl: int = values['quota_min_ttl']
         return datetime.now() + timedelta(seconds=quota_min_ttl)
 
-    def save(self):
+    def save(self) -> None:
         SetuDatabase.save(*self.data)
 
     @classmethod
-    async def get(cls, keyword=''):
+    async def get(cls, keyword='') -> "SetuResp":
         api_url = 'https://api.lolicon.app/setu/'
         queries = {
             "apikey": os.environ.get('setu_apikey', ''),

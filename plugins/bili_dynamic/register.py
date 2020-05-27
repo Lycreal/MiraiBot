@@ -22,7 +22,7 @@ class Target(BaseModel):
     groups: T.Set[int]
 
     @classmethod
-    async def init(cls, uid: T.Union[int, str], platform: Platform, group_id: int):
+    async def init(cls, uid: T.Union[int, str], platform: Platform, group_id: int) -> "Target":
         if platform == Platform.bili_dynamic:
             url = f'https://api.bilibili.com/x/space/acc/info?mid={uid}'
             async with aiohttp.request('GET', url) as resp:
@@ -43,14 +43,14 @@ class Database(BaseModel):
     __root__: T.List[Target] = []
 
     @classmethod
-    def load(cls):
+    def load(cls) -> "Database":
         try:
             db: cls = cls.parse_file(SAVE_FILE)
         except (FileNotFoundError, json.JSONDecodeError, ValidationError):
             db: cls = cls()
         return db
 
-    def save_to_file(self):
+    def save_to_file(self) -> None:
         with SAVE_FILE.open('w', encoding='utf8') as f:
             json.dump([json.loads(target.json()) for target in self.__root__], f, ensure_ascii=False, indent=2)
 
@@ -67,7 +67,7 @@ class Database(BaseModel):
     #     db.save_to_file()
 
     @classmethod
-    def add(cls, *data_array: Target):
+    def add(cls, *data_array: Target) -> T.List[str]:
         db: cls = cls.load()
         for data in data_array:
             for saved_target in db.__root__:
@@ -80,7 +80,7 @@ class Database(BaseModel):
         return [target.name for target in data_array]
 
     @classmethod
-    def remove(cls, *data_array: Target):
+    def remove(cls, *data_array: Target) -> T.List[str]:
         db: cls = cls.load()
         for data in data_array:
             for saved_target in db.__root__:
@@ -93,7 +93,7 @@ class Database(BaseModel):
         return [target.name for target in data_array]
 
     @classmethod
-    def show(cls, group_id: int):
+    def show(cls, group_id: int) -> T.List[str]:
         db: cls = cls.load()
         ret = [saved_target.name for saved_target in db.__root__ if group_id in saved_target.groups]
         return ret
