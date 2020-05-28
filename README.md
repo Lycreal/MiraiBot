@@ -12,17 +12,15 @@ A qq bot for personal use.
 
 ### 部署
 
-在部署本项目之前需先部署一个提供 `mirai-api-http` 服务的无头客户端，可参考 [python-mirai文档](https://mirai-py.originpages.com/mirai/use-console.html) 。
+在部署本项目之前需先下载 [mirai-console](https://github.com/mamoe/mirai-console) 并安装 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 插件。
 
 ```shell script
-git clone https://github.com/Lycreal/mirai_bot
-cd mirai_bot
-
-cp bot_example.env bot.env
-vim bot.env  # 修改qq号，authKey，以及其他环境变量
-vim docker-compose.yml  # 修改端口，路径等
-
-docker-compose up -d --build
+git clone https://github.com/Lycreal/mirai_bot && cd mirai_bot
+cp .example.env .env
+vim .env
+cp bot.example.env bot.env
+vim bot.env
+docker-compose up -d
 ```
 
 ## License

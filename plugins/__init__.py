@@ -1,5 +1,4 @@
 import os
-import re
 import importlib
 from pathlib import Path
 from mirai import Mirai
@@ -33,6 +32,8 @@ def load_plugin(app: Mirai, module_path: str):
 
 def load_env(path):
     with open(path, 'r', encoding='utf8') as f:
-        for match in re.finditer(r'^(.*)=[\'\"]?(.*?)[\'\"]?$', f.read(), re.MULTILINE):
-            k, v = match.groups()
-            os.environ.setdefault(k, v)
+        for line in f.readlines():
+            if not line.startswith("#") and len(line.split("=", 1)) == 2:
+                key, value = line.strip().split("=", 1)
+                value = value[1:-1] if value[0] == value[-1] == '"' else value
+                os.environ.setdefault(key, value)

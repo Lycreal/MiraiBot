@@ -99,6 +99,6 @@ async def execute(app: Mirai) -> None:
                         for group_id in target.groups:
                             await app.sendGroupMessage(group=group_id, message=components)
                 except Exception as e:
-                    EventLogger.warning(f'动态检查出错：{target.name} {e}')
-                    traceback.print_exc()
+                    EventLogger.error(f'动态检查出错：{target.name} {e}')
+                    EventLogger.error(traceback.format_exc())
                     continue
