@@ -38,7 +38,7 @@ class Command:
     @staticmethod
     async def add(app: Mirai, message: GroupMessage, *uid_list: int):
         group_id = message.sender.group.id
-        names = Database.add(*[await Target.init(uid, Platform.bili, group_id) for uid in uid_list])
+        names = Database.add(*[await Target.init(uid, Platform.bili_dynamic, group_id) for uid in uid_list])
         EventLogger.info(f'群「{message.sender.group.name}」增加动态监控：{",".join(names)}')
         await app.sendGroupMessage(group=message.sender.group,
                                    message=f'增加动态监控：{",".join(names)}',
@@ -47,7 +47,7 @@ class Command:
     @staticmethod
     async def remove(app: Mirai, message: GroupMessage, *uid_list: int):
         group_id = message.sender.group.id
-        names = Database.remove(*[await Target.init(uid, Platform.bili, group_id) for uid in uid_list])
+        names = Database.remove(*[await Target.init(uid, Platform.bili_dynamic, group_id) for uid in uid_list])
         EventLogger.info(f'群「{message.sender.group.name}」移除动态监控：{",".join(names)}')
         await app.sendGroupMessage(group=message.sender.group,
                                    message=f'移除动态监控：{",".join(names)}',
@@ -72,10 +72,11 @@ async def GMHandler(app: Mirai, message: GroupMessage):
             await command(app, message, *uid_list)
         except Exception as e:
             EventLogger.error(e)
+            EventLogger.exception(e)
 
 
 @sub_app.subroutine
-async def execute(app: Mirai):
+async def execute(app: Mirai) -> None:
     delay = 10
     while True:
         targets = Database.load().__root__
@@ -88,16 +89,16 @@ async def execute(app: Mirai):
                     await asyncio.sleep(delay)
                     resp = await getDynamicStatus(target.uid)
                     EventLogger.info(f'动态检查：{target.name}')
+                    if resp:
+                        footer = f"\n\n本条动态的地址为: https://t.bilibili.com/{resp.dynamic_id}"
+                        EventLogger.info(f'{target.name}动态更新：https://t.bilibili.com/{resp.dynamic_id}')
+                        # noinspection PyTypeChecker,PydanticTypeChecker
+                        components = [Plain(resp.msg)] + \
+                                     [await Image.fromRemote(url) for url in resp.imgs] + \
+                                     [Plain(footer)]
+                        for group_id in target.groups:
+                            await app.sendGroupMessage(group=group_id, message=components)
                 except Exception as e:
-                    EventLogger.error(e)
-                    traceback.print_exc()
+                    EventLogger.error(f'动态检查出错：{target.name} {e}')
+                    EventLogger.error(traceback.format_exc())
                     continue
-                if resp:
-                    footer = f"\n\n本条动态的地址为: https://t.bilibili.com/{resp.dynamic_id}"
-                    EventLogger.info(f'{target.name}动态更新：https://t.bilibili.com/{resp.dynamic_id}')
-                    # noinspection PyTypeChecker,PydanticTypeChecker
-                    components = [Plain(resp.msg)] + \
-                                 [await Image.fromRemote(url) for url in resp.imgs] + \
-                                 [Plain(footer)]
-                    for group_id in target.groups:
-                        await app.sendGroupMessage(group=group_id, message=components)

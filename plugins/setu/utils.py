@@ -8,15 +8,15 @@ class CoolDown(BaseModel):
     app: str
     td: float
 
-    def update(self, mid: int):
+    def update(self, mid: int) -> None:
         self.value.update({mid: datetime.now()})
 
-    def check(self, mid: int):
+    def check(self, mid: int) -> bool:
         ret = datetime.now() - self.value.get(mid, datetime.utcfromtimestamp(0)) >= timedelta(seconds=self.td)
         return ret
 
 
-def shuzi2number(shuzi: str):
+def shuzi2number(shuzi: str) -> int:
     s = {'一': 1, '两': 2, '二': 2, '三': 3,
          '四': 4, '五': 5, '六': 6, '七': 7,
          '八': 8, '九': 9, '十': 10}
