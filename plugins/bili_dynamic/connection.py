@@ -87,6 +87,10 @@ class Card(dict):
             self.dynamic = self.get('dynamic', '')
             self.title = self.get('title')
             self.banner_url = self.get('banner_url')
+        elif c_type == 256:
+            self.title = self.get('title')
+            self.intro = self.get('intro')
+            self.cover = self.get('cover')
         elif c_type == 2048:
             self.content = self['vest'].get('content')
             self.title = self['sketch'].get('title')
@@ -120,6 +124,9 @@ class Card(dict):
             elif self.c_type == 64:  # 专栏动态
                 msg = f'(专栏){self.name}：《{self.title}》\n{self.dynamic}'
                 img_urls = [self.banner_url]
+            elif self.c_type == 256:  # 音乐动态
+                msg = f'(音乐){self.name}：《{self.title}》\n{self.intro}'
+                img_urls = [self.cover]
             elif self.c_type == 2048:  # 特殊动态类型（头像框、直播日历等）
                 msg = f'(动态){self.name}：{self.content}\n{self.title}'
                 img_urls = []
