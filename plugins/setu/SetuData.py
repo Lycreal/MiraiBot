@@ -5,7 +5,7 @@ import aiohttp
 import PIL.Image
 from io import BytesIO
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import List, Set
 from datetime import datetime, timedelta
 from pydantic import BaseModel, validator, ValidationError
 from urllib.parse import urlparse
@@ -50,7 +50,7 @@ class SetuData(BaseModel):
         try:
             async with aiohttp.request('GET', self.url, timeout=aiohttp.ClientTimeout(10)) as resp:
                 img_bytes: bytes = await resp.read()
-            img: Optional[PIL.Image.Image] = PIL.Image.open(BytesIO(initial_bytes=img_bytes))
+            img: PIL.Image.Image = PIL.Image.open(BytesIO(initial_bytes=img_bytes))
             if check_size and img.size != (self.width, self.height):
                 raise ValueError(f'Image Size Error: expected {(self.width, self.height)} but got {img.size}')
         except (asyncio.TimeoutError, PIL.UnidentifiedImageError, ValueError) as e:
@@ -64,9 +64,9 @@ class SetuDatabase(BaseModel):
     @classmethod
     def load_from_file(cls) -> "SetuDatabase":
         try:
-            db: cls = cls.parse_file(SAVE_FILE)
+            db: SetuDatabase = cls.parse_file(SAVE_FILE)
         except (FileNotFoundError, json.JSONDecodeError, ValidationError):
-            db: cls = cls()
+            db = cls()
         return db
 
     def save_to_file(self) -> None:
@@ -75,7 +75,7 @@ class SetuDatabase(BaseModel):
 
     @classmethod
     def save(cls, *data_array: SetuData) -> None:
-        db: cls = cls.load_from_file()
+        db: SetuDatabase = cls.load_from_file()
         for data in data_array:
             db.__root__.discard(data)
             db.__root__.add(data)
@@ -99,8 +99,8 @@ class SetuResp(BaseModel):
     def save(self) -> None:
         SetuDatabase.save(*self.data)
 
-    @classmethod
-    async def get(cls, keyword='') -> "SetuResp":
+    @staticmethod
+    async def get(keyword='') -> "SetuResp":
         api_url = 'https://api.lolicon.app/setu/'
         queries = {
             "apikey": os.environ.get('setu_apikey', ''),
@@ -111,6 +111,6 @@ class SetuResp(BaseModel):
         }
         async with aiohttp.request('GET', api_url, params=queries) as response:
             setu_j = await response.read()
-        resp: cls = SetuResp.parse_raw(setu_j)
+        resp: SetuResp = SetuResp.parse_raw(setu_j)
         resp.save()
         return resp

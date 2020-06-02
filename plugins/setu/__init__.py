@@ -74,9 +74,9 @@ async def sendSetu(app: Mirai, message: GroupMessage, data_array: Union[Set[Setu
 
     async def send(_prefix: str, _data: SetuData):
         try:
-            setu_b: bytes = await _data.get(check_size=False)
+            setu_b: bytes = await _data.get()
             await app.sendGroupMessage(group,
-                                       [Plain(_prefix), Plain(_data.purl + '\n'), Image.fromBytes(setu_b)],
+                                       [Image.fromBytes(setu_b), Plain(_prefix + _data.purl)],
                                        source)
             EventLogger.info(f"{_prefix}色图已发送，标签：{','.join(_data.tags)}")
         except (asyncio.TimeoutError, UnidentifiedImageError, ValueError) as e:
