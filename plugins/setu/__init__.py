@@ -20,13 +20,17 @@ sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 async def GMHandler(app: Mirai, message: GroupMessage):
     match = re.match(r'(?:.*?([\d一二两三四五六七八九十]*)张|来点)?(.{0,10}?)的?色图$', message.toString())
     if match:
-        number = shuzi2number(match[1])
+        number: int = shuzi2number(match[1])
+        if number > 10:
+            number = 1
         keyword = match[2]
         try:
             await setuExecutor(app, message, number, keyword)
         except Exception as e:
-            EventLogger.warn(e)
-            EventLogger.exception(e)
+            import traceback
+            EventLogger.error(e)
+            EventLogger.error(traceback.format_exc())
+
     elif message.toString() == '色图配额':
         await checkQuota(app, message)
 
@@ -43,13 +47,13 @@ async def setuExecutor(app: Mirai, message: GroupMessage, number: int, keyword: 
     member_id: int = message.sender.id
     if keyword == '':
         if len(SetuDatabase.load_from_file().__root__) >= 300:
-            resp: SetuResp = SetuResp(code=-430, msg='空关键词')
+            resp = SetuResp(code=-430, msg='空关键词')
         else:
-            resp: SetuResp = await SetuResp.get()
+            resp = await SetuResp.get()
     elif cd.check(member_id):
-        resp: SetuResp = await SetuResp.get(keyword)
+        resp = await SetuResp.get(keyword)
     else:
-        resp: SetuResp = SetuResp(code=-3, msg='你的请求太快了，休息一下吧')
+        resp = SetuResp(code=-3, msg='你的请求太快了，休息一下吧')
 
     if resp.code == 0:
         cd.update(member_id)
