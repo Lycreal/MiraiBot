@@ -1,20 +1,20 @@
 import os
+import sys
 from mirai import Mirai
 from plugins import load_plugins, load_env
 
 data_path = os.path.join(os.path.dirname(__file__), 'data')
 
 if __name__ == '__main__':
-    if not {'host', 'port', 'authKey', 'qq'}.issubset(os.environ):
+    if len(sys.argv) >= 2:
         load_env('bot.env')  # 兼容非 docker 启动
-    params = {
-        'host': os.environ.get('host', 'localhost'),
-        'port': os.environ.get('port', 8080),
-        'authKey': os.environ.get('authKey', ''),
-        'qq': os.environ.get('qq', ''),
-        'websocket': os.environ.get('websocket', True)
-    }
-    app = Mirai(**params)
-    load_plugins(app)
+        app = Mirai(sys.argv[1])
+        load_plugins(app)
+        app.run()
+    else:
+        print('\n'.join([line.strip() for line in f"""
+        Usage: python3 {sys.argv[0]} mirai://localhost:8080/ws?authKey=$authKey&qq=$qq
 
-    app.run()
+        Visit https://mirai-py.originpages.com/tutorial/hello-world.html#hello-world-2 for more details.
+        """.strip().splitlines()]))
+        exit(1)

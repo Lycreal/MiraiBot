@@ -5,3 +5,5 @@ pillow==7.1.2
 # pytest-asyncio
 # pytest-cov
 # coverage<5
+
+# mypy
