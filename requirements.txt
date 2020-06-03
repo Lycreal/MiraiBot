@@ -1,5 +1,6 @@
 https://github.com/Lycreal/python-mirai/archive/dev.zip
 pillow==7.1.2
+lxml
 
 # pytest
 # pytest-asyncio
