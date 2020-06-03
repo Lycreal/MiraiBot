@@ -45,18 +45,80 @@ async def getCards(uid: int) -> T.List[dict]:
 
 class CardData(dict):
     def __init__(self, obj):
-        obj['card'] = deep_decode(obj['card'])
         super(CardData, self).__init__(obj)
+        self['card'] = deep_decode(self['card'])
 
     def resolve(self) -> Resp:
         name = self["desc"]["user_profile"]["info"]["uname"]
         c_type = self['desc']['type']
 
-        msg, imgs = Card(self['card'], name, c_type).resolve()
+        msg, imgs = self.resolve_card(self['card'], name, c_type)
         return Resp(msg, imgs, self['desc']['dynamic_id'])
 
+    @staticmethod
+    def resolve_card(card: dict, name: str, c_type: int) -> T.Tuple[str, T.List[str]]:
+        try:
+            if c_type == 1:  # 转发
+                content = card['item'].get('content')
+                msg = f'(转发){name}：{content}\n{"=" * 20}\n'
 
-def deep_decode(j: T.Union[dict, str]):
+                origin_type = card['item']['orig_type']
+                if origin_type == 1024:  # 被删了
+                    msg_a, img_urls_a = card['item']['tips'], []
+                else:  # 没有被删
+                    origin_name = card['origin_user']['info']['uname']
+                    msg_a, img_urls_a = CardData.resolve_card(card['origin'], origin_name, origin_type)
+                msg += msg_a
+                img_urls = img_urls_a
+            elif c_type == 2:  # 图片动态
+                description = card['item'].get('description')
+                msg = f'(动态){name}：\n{description}'
+                img_urls = [pic_info['img_src'] for pic_info in card['item']['pictures']]
+            elif c_type == 4:  # 文字动态
+                content = card['item'].get('content')
+                msg = f'(动态){name}：\n{content}'
+                img_urls = []
+            elif c_type == 8:  # 视频动态
+                dynamic = card.get('dynamic')
+                title = card.get('title')
+                pic = card.get('pic')
+                msg = f'(视频){name}：《{title}》\n{dynamic}'
+                img_urls = [pic]
+            elif c_type == 64:  # 专栏动态
+                dynamic = card.get('dynamic', '')
+                title = card.get('title')
+                banner_url = card.get('banner_url')
+                msg = f'(专栏){name}：《{title}》\n{dynamic}'
+                img_urls = [banner_url]
+            elif c_type == 256:  # 音乐动态
+                title = card.get('title')
+                intro = card.get('intro')
+                cover = card.get('cover')
+                msg = f'(音乐){name}：《{title}》\n{intro}'
+                img_urls = [cover]
+            elif c_type == 2048:  # 特殊动态类型（头像框、直播日历等）
+                content = card['vest'].get('content')
+                title = card['sketch'].get('title')
+                msg = f'(动态){name}：{content}\n{title}'
+                img_urls = []
+            elif c_type == 4200:  # 直播间动态
+                roomid = card.get('roomid')
+                cover = card.get('user_cover') or card.get('cover')
+                title = card.get('title')
+                msg = f'(直播){name}：{title} https://live.bilibili.com/{roomid}'
+                img_urls = [cover]
+            else:  # 未知
+                msg = f'{name}：(未知动态类型{c_type})'
+                img_urls = []
+        except (TypeError, KeyError):
+            msg = f'{name}：(动态类型{c_type}，解析失败)'
+            img_urls = []
+        if not msg.endswith('\n') and img_urls:
+            msg += '\n'
+        return msg, img_urls
+
+
+def deep_decode(j: T.Union[dict, str]) -> dict:
     """将str完全解析为json"""
     if isinstance(j, dict):
         for k, v in j.items():
@@ -67,71 +129,3 @@ def deep_decode(j: T.Union[dict, str]):
         except json.decoder.JSONDecodeError:
             pass
     return j
-
-
-class Card(dict):
-    # 还可以按照c_type分为不同的子类，但是摸了
-    def __init__(self, obj, name: str, c_type: int):
-        super(Card, self).__init__(obj)
-        self.name = name
-        self.c_type = c_type
-        if c_type in [1, 4]:
-            self.content = self['item'].get('content')
-        elif c_type == 2:
-            self.description = self['item'].get('description')
-        elif c_type == 8:
-            self.dynamic = self.get('dynamic')
-            self.title = self.get('title')
-            self.pic = self.get('pic')
-        elif c_type == 64:
-            self.dynamic = self.get('dynamic', '')
-            self.title = self.get('title')
-            self.banner_url = self.get('banner_url')
-        elif c_type == 2048:
-            self.content = self['vest'].get('content')
-            self.title = self['sketch'].get('title')
-        elif c_type == 4200:
-            self.roomid = self.get('roomid')
-            self.cover = self.get('user_cover') or self.get('cover')
-            self.title = self.get('title')
-
-    def resolve(self) -> T.Tuple[str, T.List[str]]:
-        try:
-            if self.c_type == 1:  # 转发
-                msg = f'(转发){self.name}：{self.content}\n{"=" * 20}\n'
-
-                origin_type = self['item']['orig_type']
-                if origin_type == 1024:  # 被删了
-                    msg_a, img_urls_a = self['item']['tips'], []
-                else:  # 没有被删
-                    origin_name = self['origin_user']['info']['uname']
-                    msg_a, img_urls_a = Card(self['origin'], origin_name, origin_type).resolve()
-                msg += msg_a
-                img_urls = img_urls_a
-            elif self.c_type == 2:  # 图片动态
-                msg = f'(动态){self.name}：\n{self.description}'
-                img_urls = [pic_info['img_src'] for pic_info in self['item']['pictures']]
-            elif self.c_type == 4:  # 文字动态
-                msg = f'(动态){self.name}：\n{self.content}'
-                img_urls = []
-            elif self.c_type == 8:  # 视频动态
-                msg = f'(视频){self.name}：《{self.title}》\n{self.dynamic}'
-                img_urls = [self.pic]
-            elif self.c_type == 64:  # 专栏动态
-                msg = f'(专栏){self.name}：《{self.title}》\n{self.dynamic}'
-                img_urls = [self.banner_url]
-            elif self.c_type == 2048:  # 特殊动态类型（头像框、直播日历等）
-                msg = f'(动态){self.name}：{self.content}\n{self.title}'
-                img_urls = []
-            elif self.c_type == 4200:  # 直播间动态
-                msg = f'(直播){self.name}：{self.title} https://live.bilibili.com/{self.roomid}'
-                img_urls = [self.cover]
-            else:  # 未知
-                msg = f'{self.name}：(未知动态类型{self.c_type})'
-                img_urls = []
-        except (TypeError, KeyError):
-            msg = f'{self.name}：(动态类型{self.c_type}，解析失败)'
-            img_urls = []
-        if not msg.endswith('\n') and img_urls:
-            msg += '\n'
-        return msg, img_urls

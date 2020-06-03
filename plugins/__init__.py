@@ -31,9 +31,13 @@ def load_plugin(app: Mirai, module_path: str):
 
 
 def load_env(path):
-    with open(path, 'r', encoding='utf8') as f:
-        for line in f.readlines():
-            if not line.startswith("#") and len(line.split("=", 1)) == 2:
-                key, value = line.strip().split("=", 1)
-                value = value[1:-1] if value[0] == value[-1] == '"' else value
-                os.environ.setdefault(key, value)
+    try:
+        with open(path, 'r', encoding='utf8') as f:
+            for line in f.readlines():
+                if not line.startswith("#") and len(line.split("=", 1)) == 2:
+                    key = line.strip().split("=", 1)[0]
+                    value = line.strip().split("=", 1)[1].strip()
+                    value = value[1:-1] if value[0] == value[-1] == '"' else value
+                    os.environ.setdefault(key, value)
+    except FileNotFoundError:
+        pass
