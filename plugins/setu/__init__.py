@@ -3,7 +3,6 @@ import random
 import re
 from typing import List, Set, Union
 
-from PIL import UnidentifiedImageError
 from mirai import Mirai, Group, GroupMessage, Image, Plain
 from mirai.event.message.chain import Source
 from mirai.logger import Event as EventLogger
@@ -79,8 +78,12 @@ async def sendSetu(app: Mirai, message: GroupMessage, data_array: Union[Set[Setu
                                        [Plain(_prefix + _data.purl + '\n'), Image.fromBytes(setu_b)],
                                        source)
             EventLogger.info(f"{_prefix}色图已发送，标签：{','.join(_data.tags)}")
-        except (asyncio.TimeoutError, UnidentifiedImageError, ValueError) as e:
-            EventLogger.warn(e)
+        except asyncio.TimeoutError as e:
+            EventLogger.warn('连接超时' + str(e))
+            raise e
+        except ValueError as e:
+            EventLogger.warn('图片尺寸检查失败' + str(e))
+            raise e
 
     number = min(number, len(data_array))
 
@@ -91,7 +94,8 @@ async def sendSetu(app: Mirai, message: GroupMessage, data_array: Union[Set[Setu
         tasks.append(task)
         await asyncio.wait(tasks, timeout=5)
     done, pending = await asyncio.wait(tasks, timeout=10)
-    if pending:
-        [t.cancel() for t in pending]
-        msg = f'共{number}个任务，{len(done)}个完成，{len(pending)}个超时'
+    num_exception = len([task for task in done if task.exception()])
+    num_pending = len([t.cancel() for t in pending])
+    if num_exception or num_pending:
+        msg = f'{number}个任务中，{num_pending}个超时，{num_exception}个异常。'
         await app.sendGroupMessage(group, msg, source)

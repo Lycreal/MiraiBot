@@ -48,13 +48,17 @@ class SetuData(BaseModel):
     async def get(self, check_size: bool = True) -> bytes:
         """从网络获取图像"""
         try:
-            async with aiohttp.request('GET', self.url, timeout=aiohttp.ClientTimeout(10)) as resp:
+            headers = {'Referer': 'https://www.pixiv.net/'}
+            async with aiohttp.request('GET', self.url, headers=headers, timeout=aiohttp.ClientTimeout(10)) as resp:
                 img_bytes: bytes = await resp.read()
-            img: PIL.Image.Image = PIL.Image.open(BytesIO(initial_bytes=img_bytes))
-            if check_size and img.size != (self.width, self.height):
-                raise ValueError(f'Image Size Error: expected {(self.width, self.height)} but got {img.size}')
-        except (asyncio.TimeoutError, PIL.UnidentifiedImageError, ValueError) as e:
+            if check_size:
+                img: PIL.Image.Image = PIL.Image.open(BytesIO(initial_bytes=img_bytes))
+                if img.size != (self.width, self.height):
+                    raise ValueError(f'Image Size Error: expected {(self.width, self.height)} but got {img.size}')
+        except (asyncio.TimeoutError, ValueError) as e:
             raise e
+        except PIL.UnidentifiedImageError:
+            raise ValueError(f'Image load fail {str(img_bytes[:20])}...')
         return img_bytes
 
 
@@ -102,14 +106,15 @@ class SetuResp(BaseModel):
     @staticmethod
     async def get(keyword='') -> "SetuResp":
         api_url = 'https://api.lolicon.app/setu/'
-        queries = {
+        params = {
             "apikey": os.environ.get('setu_apikey', ''),
             "r18": 0,
             "keyword": keyword,
             "num": 10,
+            "proxy": 'disable',
             "size1200": 'false'
         }
-        async with aiohttp.request('GET', api_url, params=queries) as response:
+        async with aiohttp.request('GET', api_url, params=params) as response:
             setu_j = await response.read()
         resp: SetuResp = SetuResp.parse_raw(setu_j)
         resp.save()
