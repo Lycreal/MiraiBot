@@ -33,4 +33,4 @@ docker run -it --rm \
 ```
 
 ## License
-[MIT LICENSE](LICENSE)
+[LICENSE](LICENSE)
