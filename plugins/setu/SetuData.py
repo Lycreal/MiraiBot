@@ -1,4 +1,3 @@
-import os
 import json
 import asyncio
 import aiohttp
@@ -10,7 +9,7 @@ from datetime import datetime, timedelta
 from pydantic import BaseModel, validator, ValidationError
 from urllib.parse import urlparse
 
-from run import data_path
+from config import data_path, setu_apikey
 
 Path(data_path).mkdir(exist_ok=True)
 SAVE_FILE = Path(data_path).joinpath('setu.json')
@@ -107,7 +106,7 @@ class SetuResp(BaseModel):
     async def get(keyword='') -> "SetuResp":
         api_url = 'https://api.lolicon.app/setu/'
         params = {
-            "apikey": os.environ.get('setu_apikey', ''),
+            "apikey": setu_apikey,
             "r18": 0,
             "keyword": keyword,
             "num": 10,

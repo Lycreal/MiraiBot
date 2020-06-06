@@ -63,13 +63,12 @@ class CardData(dict):
                 msg = f'(转发){name}：{content}\n{"=" * 20}\n'
 
                 origin_type = card['item']['orig_type']
-                if origin_type == 1024:  # 被删了
-                    msg_a, img_urls_a = card['item']['tips'], []
-                else:  # 没有被删
+                if origin_type != 1024:  # 没有被删
                     origin_name = card['origin_user']['info']['uname']
-                    msg_a, img_urls_a = CardData.resolve_card(card['origin'], origin_name, origin_type)
+                    msg_a, img_urls = CardData.resolve_card(card['origin'], origin_name, origin_type)
+                else:  # 被删了, 一般不会发生
+                    msg_a, img_urls = card['item']['tips'], []
                 msg += msg_a
-                img_urls = img_urls_a
             elif c_type == 2:  # 图片动态
                 description = card['item'].get('description')
                 msg = f'(动态){name}：\n{description}'
@@ -120,12 +119,16 @@ class CardData(dict):
 
 def deep_decode(j: T.Union[dict, str]) -> dict:
     """将str完全解析为json"""
+    # noinspection Mypy
     if isinstance(j, dict):
         for k, v in j.items():
             j[k] = deep_decode(v)
+        return j
     elif isinstance(j, str):
         try:
             j = deep_decode(json.loads(j))
         except json.decoder.JSONDecodeError:
             pass
-    return j
+        return j
+    else:
+        raise TypeError
