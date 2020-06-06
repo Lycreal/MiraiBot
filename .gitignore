@@ -3,6 +3,7 @@
 .idea/
 test/
 data/
+config_private.py
 
 ### VirtualEnv template
 # Virtualenv
