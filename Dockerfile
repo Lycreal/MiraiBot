@@ -1,10 +1,7 @@
 FROM python:slim
 
-ADD . /app/
+ADD requirements.txt /root/
 
-RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    pip3 install --no-cache-dir -r /app/requirements.txt
+RUN pip3 install --no-cache-dir -r /root/requirements.txt &&
+    rm /root/requirements.txt
 
-WORKDIR /app
-
-ENTRYPOINT ["python3", "run.py"]

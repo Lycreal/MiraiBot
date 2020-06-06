@@ -2,8 +2,8 @@
 
 .idea/
 test/
-bot.env
 data/
+config_private.py
 
 ### VirtualEnv template
 # Virtualenv

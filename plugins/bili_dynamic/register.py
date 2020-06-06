@@ -5,7 +5,7 @@ from pathlib import Path
 from pydantic import BaseModel, ValidationError
 import aiohttp
 
-from run import data_path
+from config import data_path
 
 Path(data_path).mkdir(exist_ok=True)
 SAVE_FILE = Path(data_path).joinpath('bili_dynamic.json')
@@ -17,7 +17,7 @@ class Platform(Enum):
 
 class Target(BaseModel):
     name: str
-    uid: T.Union[int, str]
+    uid: int
     platform: Platform
     groups: T.Set[int]
 
@@ -28,6 +28,8 @@ class Target(BaseModel):
             async with aiohttp.request('GET', url) as resp:
                 name = (await resp.json(encoding='utf8'))['data']['name']
             return cls(name=name, uid=uid, platform=platform, groups={group_id})
+        else:
+            raise
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -45,9 +47,9 @@ class Database(BaseModel):
     @classmethod
     def load(cls) -> "Database":
         try:
-            db: cls = cls.parse_file(SAVE_FILE)
+            db: Database = cls.parse_file(SAVE_FILE)
         except (FileNotFoundError, json.JSONDecodeError, ValidationError):
-            db: cls = cls()
+            db = cls()
         return db
 
     def save_to_file(self) -> None:
@@ -68,7 +70,7 @@ class Database(BaseModel):
 
     @classmethod
     def add(cls, *data_array: Target) -> T.List[str]:
-        db: cls = cls.load()
+        db: Database = cls.load()
         for data in data_array:
             for saved_target in db.__root__:
                 if saved_target == data:
@@ -81,10 +83,11 @@ class Database(BaseModel):
 
     @classmethod
     def remove(cls, *data_array: Target) -> T.List[str]:
-        db: cls = cls.load()
+        db: Database = cls.load()
         for data in data_array:
             for saved_target in db.__root__:
                 if saved_target == data:
+                    # noinspection Mypy
                     [saved_target.groups.discard(group) for group in data.groups]
                     break
             else:
@@ -94,6 +97,6 @@ class Database(BaseModel):
 
     @classmethod
     def show(cls, group_id: int) -> T.List[str]:
-        db: cls = cls.load()
+        db: Database = cls.load()
         ret = [saved_target.name for saved_target in db.__root__ if group_id in saved_target.groups]
         return ret

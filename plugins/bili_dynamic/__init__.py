@@ -13,7 +13,7 @@ sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 
 class Command:
-    cmd_T = T.Callable[[Mirai, GroupMessage, T.Tuple[int]], T.Coroutine[T.Any, T.Any, None]]
+    cmd_T = T.Callable[..., T.Coroutine[T.Any, T.Any, None]]
 
     @classmethod
     def getCommand(cls, msg: str) -> T.Tuple[T.Optional[cmd_T], T.List[int]]:
