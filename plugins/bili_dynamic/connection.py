@@ -117,18 +117,19 @@ class CardData(dict):
         return msg, img_urls
 
 
-def deep_decode(j: T.Union[dict, str]) -> dict:
+def deep_decode(j: T.Union[dict, list, str]) -> T.Union[dict, list, str]:
     """将str完全解析为json"""
-    # noinspection Mypy
     if isinstance(j, dict):
+        j = j.copy()
         for k, v in j.items():
             j[k] = deep_decode(v)
-        return j
+    elif isinstance(j, list):
+        j = j.copy()
+        for i, v in enumerate(j):
+            j[i] = deep_decode(v)
     elif isinstance(j, str):
         try:
             j = deep_decode(json.loads(j))
         except json.decoder.JSONDecodeError:
             pass
-        return j
-    else:
-        raise TypeError
+    return j
