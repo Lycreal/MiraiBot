@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from pydantic import BaseModel, validator, ValidationError
 from urllib.parse import urlparse
 
-from config import data_path, setu_apikey
+from config import data_path, setu_apikey, setu_proxy, setu_r18
 
 Path(data_path).mkdir(exist_ok=True)
 SAVE_FILE = Path(data_path).joinpath('setu.json')
@@ -47,7 +47,7 @@ class SetuData(BaseModel):
     async def get(self, check_size: bool = True) -> bytes:
         """从网络获取图像"""
         try:
-            headers = {'Referer': 'https://www.pixiv.net/'}
+            headers = {'Referer': 'https://www.pixiv.net/'} if 'i.pximg.net' in self.url else {}
             async with aiohttp.request('GET', self.url, headers=headers, timeout=aiohttp.ClientTimeout(10)) as resp:
                 img_bytes: bytes = await resp.read()
             if check_size:
@@ -107,10 +107,10 @@ class SetuResp(BaseModel):
         api_url = 'https://api.lolicon.app/setu/'
         params = {
             "apikey": setu_apikey,
-            "r18": 0,
+            "r18": setu_r18,
             "keyword": keyword,
             "num": 10,
-            "proxy": 'disable',
+            "proxy": setu_proxy,
             "size1200": 'false'
         }
         async with aiohttp.request('GET', api_url, params=params) as response:
