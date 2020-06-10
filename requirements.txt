@@ -1,6 +1,6 @@
-https://github.com/Lycreal/python-mirai/archive/dev.zip
+kuriyama==0.3.6
 pillow==7.1.2
-lxml
+lxml==4.5.1
 
 # pytest
 # pytest-asyncio
