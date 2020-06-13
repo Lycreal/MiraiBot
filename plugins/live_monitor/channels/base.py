@@ -40,7 +40,7 @@ class BaseChannel(abc.ABC):
         raise NotImplementedError
 
     # 播报策略
-    def judge(self, response: LiveCheckResponse, strategy: int = 3) -> bool:
+    def judge(self, response: LiveCheckResponse, strategy: int = 0b011) -> bool:
         """
         判断 response 是否满足开播信号条件
 
@@ -58,9 +58,9 @@ class BaseChannel(abc.ABC):
         similarity = difflib.SequenceMatcher(..., response.title, self.last_title).quick_ratio()  # 相似度
         title_changed: bool = self.last_title != '' and similarity < 0.7  # 防止对标题微调进行提醒
 
-        return strategy == 0 or strategy == status_changed + 2 * cool_down + 4 * title_changed
+        return strategy == 0 or bool(strategy & (0b001 * status_changed | 0b010 * cool_down | 0b100 * title_changed))
 
-    async def update(self, timeout: float = 15, strategy=3) -> Optional[LiveCheckResponse]:
+    async def update(self, timeout: float = 15, strategy=...) -> Optional[LiveCheckResponse]:
         try:
             async with aiohttp.request('GET', self.api_url, timeout=aiohttp.ClientTimeout(timeout)) as resp:
                 html_s = await resp.text(encoding='utf8')

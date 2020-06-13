@@ -48,7 +48,7 @@ class Monitor:
         else:
             return None
 
-    async def run(self, strategy=3) -> Tuple[Optional[LiveCheckResponse], Set[int]]:
+    async def run(self, strategy=...) -> Tuple[Optional[LiveCheckResponse], Set[int]]:
         channel: BaseChannel = self.next()
 
         if channel:
