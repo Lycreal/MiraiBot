@@ -103,12 +103,12 @@ def wrapper(channel_type: ChannelTypes, duration: float):
 
 async def execute(app: Mirai, monitor: Monitor) -> None:
     try:
-        resp, groups = await monitor.run(strategy=0)
+        resp, groups = await monitor.run()
         if resp:
             EventLogger.info(f'{resp.name}直播：{resp.url}')
 
             # noinspection PyTypeChecker,PydanticTypeChecker
-            components = [Plain(f'(直播){resp.name}: {resp.title}\n{resp.url}')] + \
+            components = [Plain(f'(直播){resp.name}: {resp.title}\n{resp.url}\n')] + \
                          [await Image.fromRemote(resp.cover)] if resp.cover else []
 
             [asyncio.create_task(
