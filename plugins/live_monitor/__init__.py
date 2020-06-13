@@ -47,11 +47,21 @@ class Command:
 
     @staticmethod
     async def add(group: Group, matches: T.Dict[ChannelTypes, T.List[str]]):
-        return f'已添加{[monitors[channel_type].add(cid, group.id) for channel_type, cids in matches.items() for cid in cids].count(True)}个频道'
+        count = [
+            monitors[channel_type].add(cid, group.id)
+            for channel_type, cids in matches.items()
+            for cid in cids
+        ].count(True)
+        return f'已添加{count}个频道'
 
     @staticmethod
     async def remove(group: Group, matches: T.Dict[ChannelTypes, T.List[str]]):
-        return f'已移除{[monitors[channel_type].remove(cid, group.id) for channel_type, cids in matches.items() for cid in cids].count(True)}个频道'
+        count = [
+            monitors[channel_type].remove(cid, group.id)
+            for channel_type, cids in matches.items()
+            for cid in cids
+        ].count(True)
+        return f'已移除{count}个频道'
 
     @staticmethod
     async def show(group: Group, matches: T.Dict[ChannelTypes, T.List[str]]):
@@ -101,6 +111,7 @@ def wrapper(channel_type: ChannelTypes, duration: float):
 
 
 async def execute(app: Mirai, monitor: Monitor) -> None:
+    # noinspection PyBroadException
     try:
         resp, groups = await monitor.run()
         if resp:
@@ -113,7 +124,7 @@ async def execute(app: Mirai, monitor: Monitor) -> None:
             [asyncio.create_task(
                 app.sendGroupMessage(group=group_id, message=components)
             ) for group_id in groups]
-    except:
+    except Exception:
         EventLogger.error(traceback.format_exc())
 
 

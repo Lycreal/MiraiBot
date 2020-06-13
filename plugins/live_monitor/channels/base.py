@@ -55,7 +55,7 @@ class BaseChannel(abc.ABC):
         time_delta = datetime.now(self.TIMEZONE) - self.last_check_time  # 距离上次检测到开播状态的时间
         cool_down: bool = time_delta >= timedelta(hours=1)  # 防止短时间内多次提醒
 
-        similarity = difflib.SequenceMatcher(None, response.title, self.last_title).quick_ratio()  # 相似度
+        similarity = difflib.SequenceMatcher(..., response.title, self.last_title).quick_ratio()  # 相似度
         title_changed: bool = self.last_title != '' and similarity < 0.7  # 防止对标题微调进行提醒
 
         return strategy == 0 or strategy == status_changed + 2 * cool_down + 4 * title_changed

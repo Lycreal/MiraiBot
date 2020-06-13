@@ -18,6 +18,7 @@ def load_plugins(app: Mirai, *debug: str):
             load_plugin(app, f'{module_prefix}.{plugin.name}')
 
 
+# noinspection PyUnusedLocal
 def load_plugin(app: Mirai, module_path: str):
     try:
         module = importlib.import_module(module_path)
