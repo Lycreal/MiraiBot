@@ -40,7 +40,7 @@ class BaseChannel(abc.ABC):
         raise NotImplementedError
 
     # 播报策略
-    def judge(self, response: LiveCheckResponse, strategy: int = 0b011) -> bool:
+    def judge(self, response: LiveCheckResponse, strategy=...) -> bool:
         """
         判断 response 是否满足开播信号条件
 
@@ -50,12 +50,15 @@ class BaseChannel(abc.ABC):
                          0:debug
         :return: bool
         """
+        if strategy is ...:
+            strategy = 0b011
+
         status_changed: bool = response.live_status == 1 and response.live_status != self.last_live_status  # 新开播
 
         time_delta = datetime.now(self.TIMEZONE) - self.last_check_time  # 距离上次检测到开播状态的时间
         cool_down: bool = time_delta >= timedelta(hours=1)  # 防止短时间内多次提醒
 
-        similarity = difflib.SequenceMatcher(..., response.title, self.last_title).quick_ratio()  # 相似度
+        similarity = difflib.SequenceMatcher(None, response.title, self.last_title).quick_ratio()  # 相似度
         title_changed: bool = self.last_title != '' and similarity < 0.7  # 防止对标题微调进行提醒
 
         return strategy == 0 or bool(strategy & (0b001 * status_changed | 0b010 * cool_down | 0b100 * title_changed))

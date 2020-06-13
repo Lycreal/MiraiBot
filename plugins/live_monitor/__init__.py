@@ -42,7 +42,8 @@ class Command:
         if command == cls.add and [len(match) for match in matches.values()].count(0) == len(matches):
             command = cls.show
         elif command == cls.remove:
-            [cids.extend(msg.split()) for cids in matches.values()]
+            for cids in matches.values():
+                cids.extend(msg.split())
         return command, matches
 
     @staticmethod
