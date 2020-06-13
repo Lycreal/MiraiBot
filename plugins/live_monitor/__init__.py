@@ -80,7 +80,6 @@ class Command:
 async def GMHandler(app: Mirai, group: Group, message: MessageChain):
     command, matches = Command.getCommand(message.toString())
     if command:
-        # EventLogger.info(repr(command) + repr(matches))
         try:
             msg = await command(group, matches)
             await app.sendGroupMessage(group, msg.strip())

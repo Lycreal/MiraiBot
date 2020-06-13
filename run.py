@@ -8,9 +8,6 @@ if __name__ == '__main__':
         load_plugins(app)
         app.run()
     else:
-        print('\n'.join([line.strip() for line in f"""
-        Usage: python3 {sys.argv[0]} mirai://localhost:8080/ws?authKey=$authKey&qq=$qq
-
-        Visit https://mirai-py.originpages.com/tutorial/hello-world.html#hello-world-2 for more details.
-        """.strip().splitlines()]))
+        print(f'Usage: python3 {sys.argv[0]} mirai://localhost:8080/ws?authKey=$authKey&qq=$qq\n\n'
+              'Visit https://mirai-py.originpages.com/tutorial/hello-world.html#hello-world-2 for more details.')
         exit(1)
