@@ -18,8 +18,8 @@ class LiveCheckResponse:
 
 
 class BaseChannel(abc.ABC):
-    TIME_PRE = timedelta(minutes=5)
     TIMEZONE = timezone(timedelta(hours=8))
+    HOLD_SIGNAL = False
 
     def __init__(self, cid: str):
         self.cid: str = cid  # 频道id
@@ -74,9 +74,9 @@ class BaseChannel(abc.ABC):
             return None
 
         judge = self.judge(response, strategy)
+        self.last_live_status = response.live_status
         if response.live_status == 1:
             self.last_check_time = datetime.now(self.TIMEZONE)
-            self.last_live_status = response.live_status
             self.last_title = response.title
         return response if judge else None
 
