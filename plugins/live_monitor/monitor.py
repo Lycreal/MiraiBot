@@ -16,12 +16,12 @@ class Monitor:
         self.save_file = Path(data_path).joinpath(f'{self.channel_type}.json')
 
         self.database: Database = Database.load(self.save_file)
-        self.channels: List[BaseChannel] = [self.channel(target.t_id) for target in self.database.__root__]
+        self.channels: List[BaseChannel] = [self.channel(target.id) for target in self.database.__root__]
 
         self.pos = -1
 
     def add(self, cid: str, group: int):
-        self.database.add(Target(t_id=cid, platform=self.channel_type, groups={group}))
+        self.database.add(Target(id=cid, groups={group}))
         self.database.save(self.save_file)
         for channel in self.channels:
             if channel.cid == cid:
@@ -35,7 +35,7 @@ class Monitor:
             if cid == channel.ch_name:
                 cid = channel.cid
             if cid == channel.cid:
-                self.database.remove(Target(t_id=cid, platform=self.channel_type, groups={group}))
+                self.database.remove(Target(id=cid, groups={group}))
                 self.database.save(self.save_file)
                 return True
         else:
@@ -53,7 +53,7 @@ class Monitor:
 
         if channel:
             for target in self.database.__root__:
-                if target.t_id == channel.cid:
+                if target.id == channel.cid:
                     break
             else:
                 return None, set()  # Should not happen

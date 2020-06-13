@@ -57,7 +57,7 @@ class Command:
     async def show(group: Group, matches: T.Dict[ChannelTypes, T.List[str]]):
         ret = '当前直播监控列表：\n'
         for channel_type in matches.keys():
-            tmp = '\n'.join([target.name or target.t_id
+            tmp = '\n'.join([target.name or target.id
                              for target in monitors[channel_type].database.__root__
                              if group.id in target.groups])
             if tmp:
@@ -68,7 +68,7 @@ class Command:
     async def show_detail(group: Group, matches: T.Dict[ChannelTypes, T.List[str]]):
         ret = '当前直播监控列表：\n'
         for channel_type in matches.keys():
-            tmp = '\n'.join([(target.name + ' ' + target.t_id).strip()
+            tmp = '\n'.join([(target.name + ' ' + target.id).strip()
                              for target in monitors[channel_type].database.__root__
                              if group.id in target.groups])
             if tmp:

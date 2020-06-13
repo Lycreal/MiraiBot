@@ -10,18 +10,11 @@ Path(data_path).mkdir(exist_ok=True)
 
 class Target(BaseModel):
     name: str = ''
-    t_id: str
-    platform: str
+    id: str
     groups: T.Set[int]
 
-    def __eq__(self, other):
-        if isinstance(other, self.__class__):
-            return (self.t_id, self.platform) == (other.t_id, other.platform)
-        else:
-            return False
-
     def __str__(self):
-        return self.name or self.t_id
+        return self.name or self.id
 
 
 class Database(BaseModel):
@@ -41,7 +34,7 @@ class Database(BaseModel):
 
     def add(self, target: Target) -> None:
         for saved_target in self.__root__:
-            if saved_target == target:
+            if saved_target.id == target.id:
                 saved_target.groups.update(target.groups)
                 break
         else:
