@@ -61,7 +61,9 @@ class BaseChannel(abc.ABC):
         similarity = difflib.SequenceMatcher(None, response.title, self.last_title).quick_ratio()  # 相似度
         title_changed: bool = self.last_title != '' and similarity < 0.7  # 防止对标题微调进行提醒
 
-        return strategy == 0 or bool(strategy & (0b001 * status_changed | 0b010 * cool_down | 0b100 * title_changed))
+        situation = 0b001 * status_changed | 0b010 * cool_down | 0b100 * title_changed
+
+        return strategy == (strategy & situation)
 
     async def update(self, timeout: float = 15, strategy=...) -> Optional[LiveCheckResponse]:
         try:
