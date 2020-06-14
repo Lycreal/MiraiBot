@@ -54,7 +54,7 @@ class Command:
                                    quoteSource=message.messageChain.getSource())
 
     @staticmethod
-    async def show(app: Mirai, message: GroupMessage, *uid_list: int):
+    async def show(app: Mirai, message: GroupMessage, *_: int):
         group_id = message.sender.group.id
         names = Database.show(group_id)
         msg = '动态监控列表：\n{}'.format('\n'.join(names)) if names else '动态监控列表为空'

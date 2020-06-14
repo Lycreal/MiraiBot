@@ -18,8 +18,8 @@ class LiveCheckResponse:
 
 
 class BaseChannel(abc.ABC):
-    TIME_PRE = timedelta(minutes=5)
     TIMEZONE = timezone(timedelta(hours=8))
+    HOLD_SIGNAL = False
 
     def __init__(self, cid: str):
         self.cid: str = cid  # 频道id
@@ -40,7 +40,7 @@ class BaseChannel(abc.ABC):
         raise NotImplementedError
 
     # 播报策略
-    def judge(self, response: LiveCheckResponse, strategy: int = 3) -> bool:
+    def judge(self, response: LiveCheckResponse, strategy=...) -> bool:
         """
         判断 response 是否满足开播信号条件
 
@@ -50,6 +50,9 @@ class BaseChannel(abc.ABC):
                          0:debug
         :return: bool
         """
+        if strategy is ...:
+            strategy = 0b011
+
         status_changed: bool = response.live_status == 1 and response.live_status != self.last_live_status  # 新开播
 
         time_delta = datetime.now(self.TIMEZONE) - self.last_check_time  # 距离上次检测到开播状态的时间
@@ -58,9 +61,11 @@ class BaseChannel(abc.ABC):
         similarity = difflib.SequenceMatcher(None, response.title, self.last_title).quick_ratio()  # 相似度
         title_changed: bool = self.last_title != '' and similarity < 0.7  # 防止对标题微调进行提醒
 
-        return strategy == 0 or strategy == status_changed + 2 * cool_down + 4 * title_changed
+        situation = 0b001 * status_changed | 0b010 * cool_down | 0b100 * title_changed
 
-    async def update(self, timeout: float = 15, strategy=3) -> Optional[LiveCheckResponse]:
+        return strategy == (strategy & situation)
+
+    async def update(self, timeout: float = 15, strategy=...) -> Optional[LiveCheckResponse]:
         try:
             async with aiohttp.request('GET', self.api_url, timeout=aiohttp.ClientTimeout(timeout)) as resp:
                 html_s = await resp.text(encoding='utf8')
@@ -69,9 +74,9 @@ class BaseChannel(abc.ABC):
             return None
 
         judge = self.judge(response, strategy)
+        self.last_live_status = response.live_status
         if response.live_status == 1:
             self.last_check_time = datetime.now(self.TIMEZONE)
-            self.last_live_status = response.live_status
             self.last_title = response.title
         return response if judge else None
 
