@@ -19,16 +19,19 @@ class LiveCheckResponse:
 
 class BaseChannel(abc.ABC):
     TIMEZONE = timezone(timedelta(hours=8))
-    HOLD_SIGNAL = False
 
     def __init__(self, cid: str):
         self.cid: str = cid  # 频道id
 
         self.ch_name: str = ''  # 频道名，初始化时设置，或检查状态时设置
 
-        self.last_live_status: int = 1  # 0 for down, 1 for living
-        self.last_check_time: datetime = datetime.fromtimestamp(0, self.TIMEZONE)
-        self.last_title: str = ''
+        self.start_signal: bool = False
+        self.start_time: datetime = datetime.fromtimestamp(0, self.TIMEZONE)
+        self.start_nicely: bool = True
+
+        self.last_check_status: int = 1  # 0 for down, 1 for living
+        self.last_check_living: datetime = datetime.fromtimestamp(0, self.TIMEZONE)
+        self.last_judge_title: str = ''
 
     @property
     @abc.abstractmethod
@@ -40,30 +43,40 @@ class BaseChannel(abc.ABC):
         raise NotImplementedError
 
     # 播报策略
-    def judge(self, response: LiveCheckResponse, strategy=...) -> bool:
+    def judge(self, response: LiveCheckResponse, strategies=...) -> bool:
         """
         判断 response 是否满足开播信号条件
-
-        :param response: LiveCheckResponse
-        :param strategy: 1:新开播 2:冷却 4:标题变更
-                         三者线性组合
-                         0:debug
-        :return: bool
         """
-        if strategy is ...:
-            strategy = 0b011
+        if strategies is ...:
+            strategies = [0b0101, 0b1011]
 
-        status_changed: bool = response.live_status == 1 and response.live_status != self.last_live_status  # 新开播
+        if response.live_status == 1 != self.last_check_status:  # 新开播
+            self.start_signal = True
+            self.start_time = datetime.now(self.TIMEZONE)
+            self.start_nicely = datetime.now(self.TIMEZONE) - self.last_check_living >= timedelta(hours=1)  # 非连续直播
+        if response.live_status == 1:  # 开播中
+            self.last_check_living = datetime.now(self.TIMEZONE)
+        else:
+            self.start_signal = False
+        self.last_check_status = response.live_status
 
-        time_delta = datetime.now(self.TIMEZONE) - self.last_check_time  # 距离上次检测到开播状态的时间
-        cool_down: bool = time_delta >= timedelta(hours=1)  # 防止短时间内多次提醒
+        situation = sum(condition << i for i, condition in enumerate([
+            # 未提醒的新开播
+            self.start_signal,
+            # 非连续直播
+            self.start_nicely,
+            # 标题变化较大
+            difflib.SequenceMatcher(None, response.title, self.last_judge_title).quick_ratio() < 0.7,
+            # 离最近一次开播2分钟以上
+            datetime.now(self.TIMEZONE) - self.start_time >= timedelta(minutes=2)
+        ]))
 
-        similarity = difflib.SequenceMatcher(None, response.title, self.last_title).quick_ratio()  # 相似度
-        title_changed: bool = self.last_title != '' and similarity < 0.7  # 防止对标题微调进行提醒
-
-        situation = 0b001 * status_changed | 0b010 * cool_down | 0b100 * title_changed
-
-        return strategy == (strategy & situation)
+        if any(strategy == strategy & situation for strategy in strategies):
+            self.start_signal = False
+            self.last_judge_title = response.title
+            return True
+        else:
+            return False
 
     async def update(self, timeout: float = 15, strategy=...) -> Optional[LiveCheckResponse]:
         try:
@@ -74,10 +87,6 @@ class BaseChannel(abc.ABC):
             return None
 
         judge = self.judge(response, strategy)
-        self.last_live_status = response.live_status
-        if response.live_status == 1:
-            self.last_check_time = datetime.now(self.TIMEZONE)
-            self.last_title = response.title
         return response if judge else None
 
     def __str__(self):
