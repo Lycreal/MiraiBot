@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.2]
+## [0.6.2] - 2020-06-15
 ### Changed
 - 直播监控：极大改进了开播判断逻辑
 
