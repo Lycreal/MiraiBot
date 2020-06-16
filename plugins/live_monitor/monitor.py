@@ -32,7 +32,7 @@ class Monitor:
 
     def remove(self, cid: str, group: int):
         for channel in self.channels:
-            if cid == channel.ch_name:
+            if cid in channel.ch_name.split():
                 cid = channel.cid
             if cid == channel.cid:
                 self.database.remove(Target(id=cid, groups={group}))

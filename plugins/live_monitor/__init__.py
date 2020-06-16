@@ -72,7 +72,7 @@ class Command:
                              for target in monitors[channel_type].database.__root__
                              if group.id in target.groups])
             if tmp:
-                ret += f'[{channel_type.name}]\n' + tmp
+                ret += f'[{channel_type.name}]\n' + tmp + '\n'
         return ret
 
     @staticmethod
@@ -83,7 +83,7 @@ class Command:
                              for target in monitors[channel_type].database.__root__
                              if group.id in target.groups])
             if tmp:
-                ret += f'[{channel_type.name}]\n' + tmp
+                ret += f'[{channel_type.name}]\n' + tmp + '\n'
         return ret
 
 

@@ -42,7 +42,7 @@ class Database(BaseModel):
 
     def remove(self, target: Target) -> bool:
         for saved_target in self.__root__:
-            if saved_target == target:
+            if saved_target.id == target.id:
                 # noinspection Mypy
                 [saved_target.groups.discard(group) for group in target.groups]
                 return True

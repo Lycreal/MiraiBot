@@ -6,11 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.6.2] - 2020-06-15
+## 0.6.3 - 2020-06-16
+### Changed
+- 直播监控：含空格的频道名现在可以用其中任何一部分匹配
+
+### Fixed
+- 直播监控：输出格式修正
+- 直播监控：移除命令不能正常工作
+
+## 0.6.2 - 2020-06-15
 ### Changed
 - 直播监控：极大改进了开播判断逻辑
 
-## [0.6.1] - 2020-06-14
+## 0.6.1 - 2020-06-14
 ### Added
 - 更新日志
 - 功能：查找B限
@@ -18,14 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - 直播监控：开播逻辑判断
 
-## [0.6.0] - 2020-06-13
+## 0.6.0 - 2020-06-13
 ### Added
 - 功能：直播监控
 
-## 0.1.0 - 0.6.0
-- 暂略
-
-## [0.1.0] - 2020-05-20
+## 0.1.0 - 2020-05-20
 ### Added
 - 初始发布
 - 项目框架
@@ -33,7 +38,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 [Unreleased]: https://github.com/Lycreal/mirai_bot/compare/master...dev
-[0.6.2]: https://github.com/Lycreal/mirai_bot/tree/v0.6.2
-[0.6.1]: https://github.com/Lycreal/mirai_bot/tree/v0.6.1
-[0.6.0]: https://github.com/Lycreal/mirai_bot/tree/v0.6.0
-[0.1.0]: https://github.com/Lycreal/mirai_bot/tree/v0.1.0
