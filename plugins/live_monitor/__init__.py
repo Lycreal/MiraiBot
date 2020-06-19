@@ -39,7 +39,7 @@ class Command:
             ChannelTypes.youtube_live: re.compile(r'UC[\w-]{22}').findall(msg),
             ChannelTypes.cc_live: re.compile(r'cc.163.com/(\d+)').findall(msg)
         }
-        if command == cls.add and [len(match) for match in matches.values()].count(0) == len(matches):
+        if command == cls.add and all(len(match) == 0 for match in matches.values()):
             command = cls.show
         elif command == cls.remove:
             for cids in matches.values():
@@ -118,9 +118,11 @@ async def execute(app: Mirai, monitor: Monitor) -> None:
         if resp:
             EventLogger.info(f'{resp.name}直播：{resp.url}')
 
-            # noinspection PyTypeChecker,PydanticTypeChecker
-            components = [Plain(f'(直播){resp.name}: {resp.title}\n{resp.url}\n')] + \
-                         [await Image.fromRemote(resp.cover)] if resp.cover else []
+            if resp.cover:
+                cover: Image = await app.uploadImage("group", await Image.fromRemote(resp.cover))
+                components = [Plain(f'(直播){resp.name}: {resp.title}\n{resp.url}\n'), cover]
+            else:
+                components = [Plain(f'(直播){resp.name}: {resp.title}\n{resp.url}')]
 
             [asyncio.create_task(
                 app.sendGroupMessage(group=group_id, message=components)

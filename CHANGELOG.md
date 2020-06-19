@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 0.6.4 - 2020-06-19
+### Fixed
+- 直播监控：修复无法发送不带图片的消息
+- 动态监控：避免重复上传图片
+
+### Changed
+- 色图：更新文档
+
 ## 0.6.3 - 2020-06-16
 ### Changed
 - 直播监控：含空格的频道名现在可以用其中任何一部分匹配

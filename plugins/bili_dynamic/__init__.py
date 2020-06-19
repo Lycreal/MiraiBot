@@ -88,16 +88,16 @@ async def execute(app: Mirai) -> None:
                 try:
                     await asyncio.sleep(delay)
                     resp = await getDynamicStatus(target.uid)
-                    EventLogger.info(f'动态检查：{target.name}')
                     if resp:
                         footer = f"\n\n本条动态的地址为: https://t.bilibili.com/{resp.dynamic_id}"
                         EventLogger.info(f'{target.name}动态更新：https://t.bilibili.com/{resp.dynamic_id}')
                         # noinspection PyTypeChecker,PydanticTypeChecker
                         components = [Plain(resp.msg)] + \
-                                     [await Image.fromRemote(url) for url in resp.imgs] + \
+                                     [await app.uploadImage(await Image.fromRemote(url)) for url in resp.imgs] + \
                                      [Plain(footer)]
-                        for group_id in target.groups:
-                            await app.sendGroupMessage(group=group_id, message=components)
+                        [asyncio.create_task(
+                            app.sendGroupMessage(group=group_id, message=components)
+                        ) for group_id in target.groups]
                 except Exception as e:
                     EventLogger.error(f'动态检查出错：{target.name} {e}')
                     EventLogger.error(traceback.format_exc())
