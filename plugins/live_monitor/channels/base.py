@@ -2,19 +2,19 @@ import abc
 import difflib
 import asyncio
 from typing import Optional
-from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 
 import aiohttp
+from pydantic.dataclasses import dataclass
 
 
 @dataclass
 class LiveCheckResponse:
     name: str
     live_status: int
-    title: str = ''
-    url: Optional[str] = None
-    cover: Optional[str] = None  # 封面url
+    title: str
+    url: str
+    cover: Optional[str]  # 封面url
 
 
 class BaseChannel(abc.ABC):
@@ -78,7 +78,7 @@ class BaseChannel(abc.ABC):
         else:
             return False
 
-    async def update(self, timeout: float = 15, strategy=...) -> Optional[LiveCheckResponse]:
+    async def update(self, timeout: float = 15, strategies=...) -> Optional[LiveCheckResponse]:
         try:
             async with aiohttp.request('GET', self.api_url, timeout=aiohttp.ClientTimeout(timeout)) as resp:
                 html_s = await resp.text(encoding='utf8')
@@ -86,7 +86,7 @@ class BaseChannel(abc.ABC):
         except (asyncio.TimeoutError, TypeError, IndexError, KeyError, ValueError):
             return None
 
-        judge = self.judge(response, strategy)
+        judge = self.judge(response, strategies)
         return response if judge else None
 
     def __str__(self):

@@ -48,7 +48,7 @@ class Monitor:
         else:
             return None
 
-    async def run(self, strategy=...) -> Tuple[Optional[LiveCheckResponse], Set[int]]:
+    async def run(self, strategies=...) -> Tuple[Optional[LiveCheckResponse], Set[int]]:
         channel: BaseChannel = self.next()
 
         if channel:
@@ -64,7 +64,7 @@ class Monitor:
                 self.database.save(self.save_file)
                 return None, set()
 
-            resp = await channel.update(strategy=strategy)
+            resp = await channel.update(strategies=strategies)
 
             target.name = channel.ch_name
             self.database.save(self.save_file)

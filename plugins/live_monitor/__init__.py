@@ -39,7 +39,7 @@ class Command:
             ChannelTypes.youtube_live: re.compile(r'UC[\w-]{22}').findall(msg),
             ChannelTypes.cc_live: re.compile(r'cc.163.com/(\d+)').findall(msg)
         }
-        if command == cls.add and [len(match) for match in matches.values()].count(0) == len(matches):
+        if command == cls.add and all(len(match) == 0 for match in matches.values()):
             command = cls.show
         elif command == cls.remove:
             for cids in matches.values():
