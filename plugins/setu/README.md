@@ -23,7 +23,7 @@ keyword: 色图关键词
 
 若本机无法访问 pixiv 图片服务器，可将 `setu_proxy` 清空。
 
-配置中 `setu_r18` , `setu_proxy` 与 [请求](https://api.lolicon.app/#/setu?id=%e8%af%b7%e6%b1%82) 一节中的 `r18` , `proxy` 对应。
+以下配置与 [请求](https://api.lolicon.app/#/setu?id=%e8%af%b7%e6%b1%82) 一节中的 `apikey`, `r18` , `proxy` 对应。
 
 ### 配置
 
