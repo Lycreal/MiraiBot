@@ -16,19 +16,15 @@ class NetEaseChannel(BaseChannel):
     async def resolve(self, content: str) -> LiveCheckResponse:
         tree: lxml.html.HtmlElement = lxml.html.fromstring(content)
         script: str = ''.join(tree.xpath('body/script[contains(text(),"searchResult")]/text()'))
-        script = html.unescape(script)
-        script = re.sub(r"u'(.*?)'", lambda match: f"'{match[1]}'", script)
-        script = re.search(r"^\s*(?:// )'live': (\[.*\])", script, re.M)[1]
-        try:
-            lives: T.List[T.Dict[str, T.Any]] = ast.literal_eval(script)
-        except:
-            lives = []
-        for live in lives:
-            if str(live['ccid']) == self.cid:
-                self.ch_name = live['nickname']
-                live_status = 1
-                title = live['title']
-                cover = live['cover']
+        script = re.search(r"'anchor': (\[.*\])", html.unescape(script), re.M)[1]
+        anchors: T.List[T.Dict[str, T.Any]] = ast.literal_eval(script)
+
+        for anchor in anchors:
+            if str(anchor['cuteid']) == self.cid:
+                self.ch_name = anchor['nickname']
+                live_status = anchor['status']
+                title = anchor['title']
+                cover = anchor['cover']
                 break
         else:
             live_status = 0
