@@ -1,6 +1,9 @@
 import re
 import json
+from typing import Dict, Any
+
 import lxml.html
+
 from .base import BaseChannel, LiveCheckResponse
 
 
@@ -11,15 +14,15 @@ class YoutubeChannel(BaseChannel):
 
     async def resolve(self, html_s):
         html: lxml.html.HtmlElement = lxml.html.fromstring(html_s)
-        script = html.xpath('body/script[contains(text(),"RELATED_PLAYER_ARGS")]/text()')
+        script = ''.join(html.xpath('body/script[contains(text(),"RELATED_PLAYER_ARGS")]/text()'))
 
-        json_s = re.search(r'\'RELATED_PLAYER_ARGS\':(.*),', script[0]).group(1)
+        json_s = re.search(r'\'RELATED_PLAYER_ARGS\':(.*),', script)[1]
         RELATED_PLAYER_ARGS = json.loads(json_s)
 
         json_s = RELATED_PLAYER_ARGS['watch_next_response']
-        watch_next_response: dict = json.loads(json_s)
+        watch_next_response: Dict[str, Any] = json.loads(json_s)
 
-        videoMetadataRenderer: dict = \
+        videoMetadataRenderer: Dict[str, Any] = \
             watch_next_response['contents']['twoColumnWatchNextResults']['results']['results']['contents'][0][
                 'itemSectionRenderer']['contents'][0]['videoMetadataRenderer']
 

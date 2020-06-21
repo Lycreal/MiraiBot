@@ -7,6 +7,7 @@ from mirai import Mirai, Group, MessageChain, GroupMessage, Plain, Image
 from mirai.logger import Event as EventLogger
 
 from .monitor import Monitor
+from .channels import ChannelCheckError
 from .enums import ChannelTypes
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
@@ -127,6 +128,8 @@ async def execute(app: Mirai, monitor: Monitor) -> None:
             [asyncio.create_task(
                 app.sendGroupMessage(group=group_id, message=components)
             ) for group_id in groups]
+    except ChannelCheckError as e:
+        EventLogger.error(e)
     except Exception:
         EventLogger.error(traceback.format_exc())
 
