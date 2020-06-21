@@ -89,9 +89,9 @@ class BaseChannel(abc.ABC):
         except Exception as e:
             raise ChannelCheckError(
                 f'Error while fetching channel information: {self.ch_name or self.cid}\n' +
-                'File "{}", line {}\n'.format(e.__traceback__.tb_frame.f_globals["__file__"],
-                                              e.__traceback__.tb_lineno) +
-                f'{e.__class__.__name__}: {str(e)}'
+                '    File "{}", line {}\n'.format(e.__traceback__.tb_next.tb_frame.f_globals["__file__"],
+                                                  e.__traceback__.tb_next.tb_lineno) +
+                f'  {e.__class__.__name__}: {str(e)}'
             ) from e
 
         judge = self.judge(response, strategies)
