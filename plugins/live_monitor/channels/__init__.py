@@ -1,7 +1,7 @@
-from .base import BaseChannel, LiveCheckResponse, ChannelCheckError
+from .base import BaseChannel, LiveCheckResponse, ChannelResolveError
 from .bili import BiliChannel
 from .youtube import YoutubeChannel
 from .cc import NetEaseChannel
 
-__all__ = ['BaseChannel', 'LiveCheckResponse', 'ChannelCheckError',
+__all__ = ['BaseChannel', 'LiveCheckResponse', 'ChannelResolveError',
            'BiliChannel', 'YoutubeChannel', 'NetEaseChannel']

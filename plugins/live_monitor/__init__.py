@@ -7,7 +7,7 @@ from mirai import Mirai, Group, MessageChain, GroupMessage, Plain, Image
 from mirai.logger import Event as EventLogger
 
 from .monitor import Monitor
-from .channels import ChannelCheckError
+from .channels import ChannelResolveError
 from .enums import ChannelTypes
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
@@ -73,18 +73,18 @@ class Command:
                              for target in monitors[channel_type].database.__root__
                              if group.id in target.groups])
             if tmp:
-                ret += f'[{channel_type.name}]\n' + tmp + '\n'
+                ret += f'[{channel_type.name}]\n{tmp}\n'
         return ret
 
     @staticmethod
     async def show_detail(group: Group, matches: T.Dict[ChannelTypes, T.List[str]]):
         ret = '当前直播监控列表：\n'
         for channel_type in matches.keys():
-            tmp = '\n'.join([(target.name + ' ' + target.id).strip()
+            tmp = '\n'.join([f'{target.name} {target.id}'.strip()
                              for target in monitors[channel_type].database.__root__
                              if group.id in target.groups])
             if tmp:
-                ret += f'[{channel_type.name}]\n' + tmp + '\n'
+                ret += f'[{channel_type.name}]\n{tmp}\n'
         return ret
 
 
@@ -125,10 +125,16 @@ async def execute(app: Mirai, monitor: Monitor) -> None:
             else:
                 components = [Plain(f'(直播){resp.name}: {resp.title}\n{resp.url}')]
 
-            [asyncio.create_task(
+            tasks = [asyncio.create_task(
                 app.sendGroupMessage(group=group_id, message=components)
             ) for group_id in groups]
-    except ChannelCheckError as e:
+
+            done, pending = await asyncio.wait(tasks)
+            for task in done:
+                if e := task.exception():
+                    EventLogger.error(e)
+
+    except ChannelResolveError as e:
         EventLogger.error(e)
     except Exception:
         EventLogger.error(traceback.format_exc())
