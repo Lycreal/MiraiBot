@@ -16,8 +16,8 @@ class NetEaseChannel(BaseChannel):
     async def resolve(self, content: str) -> LiveCheckResponse:
         tree: lxml.html.HtmlElement = lxml.html.fromstring(content)
         script: str = ''.join(tree.xpath('body/script[contains(text(),"searchResult")]/text()'))
-        script = re.search(r"'anchor': (\[.*\])", html.unescape(script), re.M)[1]
-        anchors: T.List[T.Dict[str, T.Any]] = ast.literal_eval(script)
+        script = re.search(r"'anchor': (\[.*\]|)", html.unescape(script), re.M)[1]
+        anchors: T.List[T.Dict[str, T.Any]] = ast.literal_eval(script) if script else []
 
         for anchor in anchors:
             if str(anchor['cuteid']) == self.cid:

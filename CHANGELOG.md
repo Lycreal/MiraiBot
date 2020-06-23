@@ -5,9 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Changed
+### Added
 - 直播监控：网易cc获取封面
+- 直播监控：异常处理
 
+### Fixed
+- 动态监控：修复一处函数调用错误
+
+### Changed
+- 直播监控：网易cc，youtube频道信息解析
 
 ## 0.6.4 - 2020-06-19
 ### Fixed
