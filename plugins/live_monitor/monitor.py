@@ -16,7 +16,7 @@ class Monitor:
         self.save_file = Path(data_path).joinpath(f'{self.channel_type}.json')
 
         self.database: Database = Database.load(self.save_file)
-        self.channels: List[BaseChannel] = [self.channel(target.id) for target in self.database.__root__]
+        self.channels: List[BaseChannel] = [self.channel(target.id, target.name) for target in self.database.__root__]
 
         self.pos = -1
 

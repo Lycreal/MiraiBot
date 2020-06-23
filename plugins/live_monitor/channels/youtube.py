@@ -1,6 +1,9 @@
 import re
 import json
+from typing import Dict, Any
+
 import lxml.html
+
 from .base import BaseChannel, LiveCheckResponse
 
 
@@ -9,36 +12,36 @@ class YoutubeChannel(BaseChannel):
     def api_url(self):
         return f'https://www.youtube.com/channel/{self.cid}/live'
 
-    async def resolve(self, html_s):
-        html: lxml.html.HtmlElement = lxml.html.fromstring(html_s)
-        script = html.xpath('body/script[contains(text(),"RELATED_PLAYER_ARGS")]/text()')
+    async def resolve(self, content: str):
+        tree: lxml.html.HtmlElement = lxml.html.fromstring(content)
 
-        json_s = re.search(r'\'RELATED_PLAYER_ARGS\':(.*),', script[0]).group(1)
-        RELATED_PLAYER_ARGS = json.loads(json_s)
+        if script := ''.join(tree.xpath('body/script[contains(text(),"RELATED_PLAYER_ARGS")]/text()')):
+            script = re.search(r'\'RELATED_PLAYER_ARGS\':(.*),', script)[1]
+            watch_next_response: Dict[str, Any] = json.loads(json.loads(script)['watch_next_response'])
 
-        json_s = RELATED_PLAYER_ARGS['watch_next_response']
-        watch_next_response: dict = json.loads(json_s)
+            videoMetadataRenderer: Dict[str, Any] = watch_next_response['contents']['twoColumnWatchNextResults']['results']['results']['contents'][0]['itemSectionRenderer']['contents'][0]['videoMetadataRenderer']
+            shareVideoEndpoint: Dict[str, Any] = videoMetadataRenderer['shareButton']['buttonRenderer']['navigationEndpoint']['shareVideoEndpoint']
 
-        videoMetadataRenderer: dict = \
-            watch_next_response['contents']['twoColumnWatchNextResults']['results']['results']['contents'][0][
-                'itemSectionRenderer']['contents'][0]['videoMetadataRenderer']
+            self.ch_name = ''.join(run['text'] for run in videoMetadataRenderer['owner']['videoOwnerRenderer']['title']['runs'])
+            badges = videoMetadataRenderer.get('badges')
+            live_status = 1 if badges and 'liveBadge' in badges[0].keys() else 0
+            vid = shareVideoEndpoint['videoId']
+            title = shareVideoEndpoint['videoTitle']
+            live_url = shareVideoEndpoint['videoShareUrl']
 
-        self.ch_name = ''.join(
-            run['text'] for run in videoMetadataRenderer['owner']['videoOwnerRenderer']['title']['runs']
-        )
+        elif script := ''.join(tree.xpath('//div[@id="player-wrap"]/script[contains(text(),"player_response")]/text()')):
+            script = re.search(r'ytplayer.config = ({.*?});', script)[1]
+            script = json.loads(script)['args']['player_response']
+            videoDetails: Dict[str, Any] = json.loads(script)['videoDetails']
 
-        shareVideoEndpoint = videoMetadataRenderer['shareButton']['buttonRenderer']['navigationEndpoint'][
-            'shareVideoEndpoint']
-
-        vid = shareVideoEndpoint['videoId']
-        title = shareVideoEndpoint['videoTitle']
-        live_url = shareVideoEndpoint['videoShareUrl']
-
-        badges = videoMetadataRenderer.get('badges')
-        if badges and 'liveBadge' in badges[0].keys():
-            live_status = 1
+            self.ch_name = videoDetails['author']
+            live_status = videoDetails.get('isLive', 0)
+            title = videoDetails['title']
+            vid = videoDetails['videoId']
+            live_url = f'https://youtu.be/{vid}'
         else:
-            live_status = 0
+            raise AssertionError
+
         return LiveCheckResponse(name=self.ch_name,
                                  live_status=live_status,
                                  title=title,

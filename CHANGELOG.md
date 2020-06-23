@@ -6,6 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 0.6.5 - 2020-06-23
+### Added
+- 直播监控：网易cc获取封面
+- 直播监控：异常处理
+
+### Fixed
+- 动态监控：修复一处函数调用错误
+
+### Changed
+- 直播监控：网易cc，youtube频道信息解析
+
 ## 0.6.4 - 2020-06-19
 ### Fixed
 - 直播监控：修复无法发送不带图片的消息

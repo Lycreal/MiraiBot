@@ -89,11 +89,13 @@ async def execute(app: Mirai) -> None:
                     await asyncio.sleep(delay)
                     resp = await getDynamicStatus(target.uid)
                     if resp:
-                        footer = f"\n\n本条动态的地址为: https://t.bilibili.com/{resp.dynamic_id}"
+                        footer = f"\n\n动态地址: https://t.bilibili.com/{resp.dynamic_id}"
                         EventLogger.info(f'{target.name}动态更新：https://t.bilibili.com/{resp.dynamic_id}')
                         # noinspection PyTypeChecker,PydanticTypeChecker
                         components = [Plain(resp.msg)] + \
-                                     [await app.uploadImage(await Image.fromRemote(url)) for url in resp.imgs] + \
+                                     [await app.uploadImage(
+                                         'group', await Image.fromRemote(url)
+                                     ) for url in resp.imgs] + \
                                      [Plain(footer)]
                         [asyncio.create_task(
                             app.sendGroupMessage(group=group_id, message=components)

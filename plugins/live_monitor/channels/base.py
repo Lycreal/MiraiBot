@@ -1,6 +1,5 @@
 import abc
 import difflib
-import asyncio
 from typing import Optional
 from datetime import datetime, timezone, timedelta
 
@@ -11,19 +10,23 @@ from pydantic.dataclasses import dataclass
 @dataclass
 class LiveCheckResponse:
     name: str
-    live_status: int
+    live_status: Optional[int]
     title: str
     url: str
     cover: Optional[str]  # 封面url
 
 
+class ChannelResolveError(Exception):
+    pass
+
+
 class BaseChannel(abc.ABC):
     TIMEZONE = timezone(timedelta(hours=8))
 
-    def __init__(self, cid: str):
+    def __init__(self, cid: str, name=''):
         self.cid: str = cid  # 频道id
 
-        self.ch_name: str = ''  # 频道名，初始化时设置，或检查状态时设置
+        self.ch_name: str = name  # 频道名，初始化时设置，或检查状态时设置
 
         self.start_signal: bool = False
         self.start_time: datetime = datetime.fromtimestamp(0, self.TIMEZONE)
@@ -83,8 +86,14 @@ class BaseChannel(abc.ABC):
             async with aiohttp.request('GET', self.api_url, timeout=aiohttp.ClientTimeout(timeout)) as resp:
                 html_s = await resp.text(encoding='utf8')
             response = await self.resolve(html_s)
-        except (asyncio.TimeoutError, TypeError, IndexError, KeyError, ValueError):
-            return None
+        except Exception as e:
+            file = e.__traceback__.tb_next.tb_frame.f_globals["__file__"]
+            lineno = e.__traceback__.tb_next.tb_lineno
+            raise ChannelResolveError(
+                f'Error while fetching channel information: {self.ch_name or self.cid}\n'
+                f'    File "{file}", line {lineno}\n'
+                f'  {e.__class__.__name__}: {str(e)}'
+            ) from e
 
         judge = self.judge(response, strategies)
         return response if judge else None
