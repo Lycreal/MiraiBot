@@ -14,7 +14,7 @@ class YoutubeChannel(BaseChannel):
 
     async def resolve(self, content: str):
         tree: lxml.html.HtmlElement = lxml.html.fromstring(content)
-
+        script: str
         if script := ''.join(tree.xpath('body/script[contains(text(),"RELATED_PLAYER_ARGS")]/text()')):
             script = re.search(r'\'RELATED_PLAYER_ARGS\':(.*),', script)[1]
             watch_next_response: Dict[str, Any] = json.loads(json.loads(script)['watch_next_response'])
@@ -28,11 +28,19 @@ class YoutubeChannel(BaseChannel):
             vid = shareVideoEndpoint['videoId']
             title = shareVideoEndpoint['videoTitle']
             live_url = shareVideoEndpoint['videoShareUrl']
-
         elif script := ''.join(tree.xpath('//div[@id="player-wrap"]/script[contains(text(),"player_response")]/text()')):
             script = re.search(r'ytplayer.config = ({.*?});', script)[1]
             script = json.loads(script)['args']['player_response']
             videoDetails: Dict[str, Any] = json.loads(script)['videoDetails']
+
+            self.ch_name = videoDetails['author']
+            live_status = videoDetails.get('isLive', 0)
+            title = videoDetails['title']
+            vid = videoDetails['videoId']
+            live_url = f'https://youtu.be/{vid}'
+        elif script := ''.join(tree.xpath('body/script[contains(text(),"ytInitialPlayerResponse")]/text()')):
+            script = re.search(r'window\["ytInitialPlayerResponse"\] = (.*);', script)[1]
+            videoDetails = json.loads(script)['videoDetails']
 
             self.ch_name = videoDetails['author']
             live_status = videoDetails.get('isLive', 0)
