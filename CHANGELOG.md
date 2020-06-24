@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 0.6.6 - 2020-06-24
+### Changed
+- 直播监控：youtube频道信息解析
+
 ## 0.6.5 - 2020-06-23
 ### Added
 - 直播监控：网易cc获取封面
