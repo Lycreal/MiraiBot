@@ -10,7 +10,7 @@ MiraiBot
 - [使用说明](plugins/help)
 - [色图](plugins/setu)
 - [搜图](plugins/pic_finder)
-- [撤回](plugins/recall)
+- [撤回](plugins/revoke)
 - [bilibili 动态监控](plugins/bili_dynamic)
 - [bilibili 小程序解析](plugins/bili_extractor)
 - [直播监控](plugins/live_monitor)

@@ -13,7 +13,7 @@ sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 
 @sub_app.receiver(GroupMessage)
-async def recall(app: Mirai, group: Group, message: MessageChain, source: Source):
+async def revoke(app: Mirai, group: Group, message: MessageChain, source: Source):
     def reply(msg: MESSAGE_T, at: bool = False):
         _s = source if at else None
         return app.sendGroupMessage(group, msg, _s)
