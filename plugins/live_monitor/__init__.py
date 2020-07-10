@@ -1,3 +1,14 @@
+"""直播监控
+
+使用方法：
+直播监控添加 <频道1> <频道2> ...
+直播监控移除 <频道1> <频道2> ...
+直播监控列表 [页码]
+直播监控详细列表 [页码]
+
+详细说明：https://github.com/Lycreal/MiraiBot/blob/master/plugins/live_monitor/README.md
+"""
+
 import re
 import asyncio
 import traceback
@@ -14,41 +25,28 @@ sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 
 class Command:
-    cmd_T = T.Callable[
-        [Group, T.Dict[ChannelTypes, T.List[str]]], T.Coroutine[T.Any, T.Any, str]]
-
     @classmethod
-    def getCommand(cls, msg: str) -> T.Tuple[T.Optional[cmd_T], T.Dict[ChannelTypes, T.List[str]]]:
-        COMMAND = '直播' in msg and '监控' in msg
-        commands = {
-            cls.add: re.compile(r'新增|增|添|加').search(msg),
-            cls.remove: re.compile(r'取消|删|减|除').search(msg),
-            cls.show_detail: re.compile(r'显示|列表').search(msg)
-        }
-        if COMMAND:
-            for command, match in commands.items():
-                if match:
-                    break
+    def getCommand(cls, msg: str) -> T.Optional[T.Callable[[Group, str], T.Coroutine[T.Any, T.Any, str]]]:
+        if '直播' in msg and '监控' in msg:
+            command_map = {
+                re.compile(r'新增|增|添|加'): cls.add,
+                re.compile(r'取消|删|减|除'): cls.remove,
+                re.compile(r'显示|列表'): cls.show
+            }
+            for pattern in command_map.keys():
+                if pattern.search(msg):
+                    return command_map[pattern]
             else:
-                command = cls.add
-        else:
-            command = None
-            msg = ''
+                return cls.help
+        return None
 
+    @staticmethod
+    async def add(group: Group, msg: str):
         matches: T.Dict[ChannelTypes, T.List[str]] = {
             ChannelTypes.bili_live: re.compile(r'live.bilibili.com/(\d+)').findall(msg),
             ChannelTypes.youtube_live: re.compile(r'UC[\w-]{22}').findall(msg),
             ChannelTypes.cc_live: re.compile(r'cc.163.com/(\d+)').findall(msg)
         }
-        if command == cls.add and all(len(match) == 0 for match in matches.values()):
-            command = cls.show
-        elif command == cls.remove:
-            for cids in matches.values():
-                cids.extend(msg.split())
-        return command, matches
-
-    @staticmethod
-    async def add(group: Group, matches: T.Dict[ChannelTypes, T.List[str]]):
         count = [
             monitors[channel_type].add(cid, group.id)
             for channel_type, cids in matches.items()
@@ -57,43 +55,55 @@ class Command:
         return f'已添加{count}个频道'
 
     @staticmethod
-    async def remove(group: Group, matches: T.Dict[ChannelTypes, T.List[str]]):
+    async def remove(group: Group, msg: str):
+        matches: T.Dict[ChannelTypes, T.List[str]] = {
+            ChannelTypes.bili_live: re.compile(r'live.bilibili.com/(\d+)').findall(msg),
+            ChannelTypes.youtube_live: re.compile(r'UC[\w-]{22}').findall(msg),
+            ChannelTypes.cc_live: re.compile(r'cc.163.com/(\d+)').findall(msg)
+        }
         count = [
             monitors[channel_type].remove(cid, group.id)
             for channel_type, cids in matches.items()
-            for cid in cids
+            for cid in cids + msg.split()
         ].count(True)
         return f'已移除{count}个频道'
 
     @staticmethod
-    async def show(group: Group, matches: T.Dict[ChannelTypes, T.List[str]]):
-        ret = '当前直播监控列表：\n'
-        for channel_type in matches.keys():
-            tmp = '\n'.join([target.name or target.id
-                             for target in monitors[channel_type].database.__root__
-                             if group.id in target.groups])
-            if tmp:
-                ret += f'[{channel_type.name}]\n{tmp}\n'
+    async def show(group: Group, msg: str):
+        page = int(msg.split()[-1]) - 1 if msg.split()[-1].isdecimal() else 0
+        page_size = 10
+        channel_names = [(channel_type, target.name, target.id)
+                         for channel_type in monitors.keys()
+                         for target in monitors[channel_type].database.__root__
+                         if group.id in target.groups
+                         ]
+        page_total = len(channel_names) // page_size + bool(len(channel_names) % page_size)
+        ret = f'直播监控列表：第{page + 1}页/共{page_total}页\n'
+
+        tmp: T.Dict[ChannelTypes, T.List[str]] = {}
+        for channel_type, name, tid in channel_names[page_size * page:page_size * (page + 1)]:
+            tmp.setdefault(channel_type, []).append(
+                f'{name}\t{tid}' if '详细' in msg else (name or tid)
+            )
+        for channel_type, names in tmp.items():
+            ret += '[{}]\n{}\n'.format(
+                channel_type.name,
+                '\n'.join(names)
+            )
         return ret
 
+    # noinspection PyUnusedLocal
     @staticmethod
-    async def show_detail(group: Group, matches: T.Dict[ChannelTypes, T.List[str]]):
-        ret = '当前直播监控列表：\n'
-        for channel_type in matches.keys():
-            tmp = '\n'.join([f'{target.name} {target.id}'.strip()
-                             for target in monitors[channel_type].database.__root__
-                             if group.id in target.groups])
-            if tmp:
-                ret += f'[{channel_type.name}]\n{tmp}\n'
-        return ret
+    async def help(group: Group, msg: str):
+        return __doc__.strip()
 
 
 @sub_app.receiver(GroupMessage)
 async def GMHandler(app: Mirai, group: Group, message: MessageChain):
-    command, matches = Command.getCommand(message.toString())
+    command = Command.getCommand(message.toString())
     if command:
         try:
-            msg = await command(group, matches)
+            msg = await command(group, message.toString())
             await app.sendGroupMessage(group, msg.strip())
         except Exception as e:
             EventLogger.error(e)

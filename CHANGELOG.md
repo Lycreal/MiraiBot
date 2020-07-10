@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 新功能：使用说明
 
+### Changed
+- 直播监控：用户交互
+
 ## 0.6.6 - 2020-06-24
 ### Changed
 - 直播监控：youtube频道信息解析
