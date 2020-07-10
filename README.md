@@ -7,6 +7,7 @@ MiraiBot
 
 ### 功能
 
+- [使用说明](plugins/help)
 - [色图](plugins/setu)
 - [搜图](plugins/pic_finder)
 - [撤回](plugins/recall)
