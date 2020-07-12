@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- 新功能：随机图片
+
 ## 0.6.7 - 2020-07-10
 ### Added
 - 新功能：使用说明
