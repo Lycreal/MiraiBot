@@ -62,11 +62,13 @@ class CoolDown(BaseModel):
         return ret
 
 
-def shuzi2number(shuzi: str) -> int:
+def shuzi2number(shuzi: T.Optional[str]) -> int:
     s = {'一': 1, '两': 2, '二': 2, '三': 3,
          '四': 4, '五': 5, '六': 6, '七': 7,
          '八': 8, '九': 9, '十': 10}
-    if shuzi.isdecimal():
+    if not shuzi:
+        return 1
+    elif shuzi.isdecimal():
         return int(shuzi)
     elif shuzi in s.keys():
         return s[shuzi]
