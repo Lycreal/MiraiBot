@@ -16,7 +16,7 @@ class PictureSource(BaseModel, abc.ABC):
         return image_url
 
     async def fetch(self):
-        async with aiohttp.request('GET', self.api_url) as resp:
+        async with aiohttp.request('GET', self.api_url, timeout=aiohttp.client.ClientTimeout(10)) as resp:
             return await resp.text(self.encoding)
 
     @abc.abstractmethod
