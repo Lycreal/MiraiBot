@@ -1,7 +1,7 @@
 import abc
-import aiohttp
 import typing as T
 
+import aiohttp
 from pydantic import BaseModel
 
 

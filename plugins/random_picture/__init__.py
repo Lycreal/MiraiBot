@@ -1,3 +1,5 @@
+import asyncio
+
 from mirai import (
     Mirai, GroupMessage, FriendMessage,
     MessageChain,
@@ -5,14 +7,13 @@ from mirai import (
 )
 from mirai.logger import Event as EventLogger
 
-from .sources import CatPicture, MoePicture
+from .sources import CatPicture
 from .._utils import at_me, reply, Sender, Type
 
 sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 
 sources = {
-    'cat': CatPicture(),
-    'moe': MoePicture()
+    'cat': CatPicture()
 }
 
 
@@ -28,6 +29,8 @@ async def GMHandler(app: Mirai, sender: "Sender", event_type: "Type", message: M
             try:
                 image_url = await source.get()
                 await app_reply([await Image.fromRemote(image_url)], at_sender=True)
+            except asyncio.TimeoutError:
+                await app_reply("请求超时", at_sender=True)
             except Exception as e:
                 import traceback
                 EventLogger.error(e)
