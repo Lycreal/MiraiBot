@@ -14,7 +14,7 @@ MiraiBot
 - [bilibili 动态监控](plugins/bili_dynamic)
 - [bilibili 小程序解析](plugins/bili_extractor)
 - [直播监控](plugins/live_monitor)
-
+- [随机图片](plugins/random_picture)
 
 ### 部署
 

@@ -5,8 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## 0.7.0 - 2020-09-12
 ### Added
-- 新功能：随机图片
+- 新功能：随机猫猫图片
+
+### Changed
+- 查找B限：跟随B站分区修改
 
 ## 0.6.7 - 2020-07-10
 ### Added
