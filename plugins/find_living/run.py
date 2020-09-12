@@ -27,7 +27,7 @@ class Room:
 
 def params(page, page_size=99):
     return {
-        'area_id': 199,
+        'area_id': 371,
         'page_size': page_size,
         'page': page + 1,
         'sort_type': 'online'
