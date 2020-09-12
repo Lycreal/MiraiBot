@@ -11,7 +11,7 @@ from mirai.event.message.chain import Source
 from mirai.logger import Event as EventLogger
 
 from .SetuData import SetuData, SetuResp, SetuDatabase
-from .utils import CoolDown, shuzi2number
+from .._utils import CoolDown, shuzi2number
 
 cd = CoolDown(app='setu', td=20)
 
@@ -95,7 +95,7 @@ async def sendSetu(app: Mirai, message: GroupMessage, data_array: Union[Set[Setu
     number = min(number, len(data_array))
 
     # 延时逐个启动任务
-    tasks: List[asyncio.Task] = []
+    tasks: List[asyncio.Task[None]] = []
     for i, data in enumerate(random.sample(data_array, k=number)):
         prefix = f'[{i + 1}/{number}]' if number > 1 else ''
         task = asyncio.create_task(send(prefix, data))
