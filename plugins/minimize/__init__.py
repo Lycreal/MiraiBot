@@ -1,6 +1,6 @@
 import typing as T
 from mirai import Mirai, Group, GroupMessage, MessageChain, Image, Plain
-from requests import get
+import aiohttp
 from io import BytesIO
 from PIL import Image as im
 from PIL import ImageSequence
