@@ -14,8 +14,8 @@ async def minimize(app: Mirai, group: Group, message: MessageChain):
         image: T.Optional[Image] = message.getFirstComponent(Image)
         if image and image.url:
             threshold = [48, 24, 10]
-            response = get(image.url)
-            img = im.open(BytesIO(response.content))
+            async with aiohttp.request('GET', image.url) as resp:
+                img = im.open(BytesIO(await resp.read()))
 
             width, height = img.size
             if min(width, height) < 25:
