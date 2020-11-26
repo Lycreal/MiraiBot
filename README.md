@@ -18,6 +18,8 @@ MiraiBot
 
 ### 部署
 
+运行环境：python3.8+
+
 0. 运行 [mirai-console](https://github.com/mamoe/mirai-console) 并安装 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 插件。
 1. `git clone --depth=1 https://github.com/Lycreal/MiraiBot && cd MiraiBot`
 2. `pip3 install -r requirements.txt`
