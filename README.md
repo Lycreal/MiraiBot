@@ -1,6 +1,7 @@
 MiraiBot
 -------------
-
+<a href="https://www.python.org" alt="python"><img src="https://img.shields.io/badge/python-3.8+-blue" /></a>
+            
 ### 简介
 
 基于 [mirai](https://github.com/mamoe/mirai) 内核和 [python-mirai](https://github.com/GreyElaina/python-mirai) 接口的QQ机器人。
@@ -17,8 +18,6 @@ MiraiBot
 - [随机图片](plugins/random_picture)
 
 ### 部署
-
-运行环境：python3.8+
 
 0. 运行 [mirai-console](https://github.com/mamoe/mirai-console) 并安装 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 插件。
 1. `git clone https://github.com/Lycreal/MiraiBot && cd MiraiBot`
