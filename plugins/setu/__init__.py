@@ -10,6 +10,7 @@ from mirai import (
 from mirai.event.message.chain import Source
 from mirai.logger import Event as EventLogger
 
+from config import setu_maximum
 from .SetuData import SetuData, SetuResp, SetuDatabase
 from .._utils import CoolDown, shuzi2number
 
@@ -25,8 +26,8 @@ async def GMHandler(app: Mirai, message: GroupMessage):
     match = re.match(r'(?:.*?([\d一二两三四五六七八九十]*)张|来点)?(.{0,10}?)的?色图$', message.toString())
     if match:
         number: int = shuzi2number(match[1])
-        if number > 10:
-            number = 1
+        if number > min(setu_maximum, 10):
+            number = min(setu_maximum, 10)
         keyword = match[2]
         try:
             await setuExecutor(app, message, number, keyword)

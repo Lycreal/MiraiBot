@@ -27,11 +27,14 @@ keyword: 色图关键词
 
 ### 配置
 
-```python
-setu_apikey = ''
-setu_r18 = ''
-setu_proxy = 'disable'
+```python3
+setu_apikey: str = ''
+setu_r18: str = '0'
+setu_proxy: str = 'disable'
+setu_maximum: int = 3
 ```
+
+`setu_maximum` : 每次发送色图的数目限制，不大于10
 
 ### 鸣谢
 
