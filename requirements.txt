@@ -1,3 +1,4 @@
+aiohttp
 kuriyama==0.3.6
 pillow==7.2.0
 lxml==4.5.2
