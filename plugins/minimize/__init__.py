@@ -1,6 +1,6 @@
 import typing as T
-from mirai import Mirai, Group, GroupMessage, MessageChain, Image, Plain
 import aiohttp
+from mirai import Mirai, Group, GroupMessage, MessageChain, Image, Plain
 from io import BytesIO
 from PIL import Image as im
 from PIL import ImageSequence
@@ -11,15 +11,16 @@ sub_app = Mirai(f"mirai://localhost:8080/?authKey=0&qq=0")
 @sub_app.receiver(GroupMessage)
 async def minimize(app: Mirai, group: Group, message: MessageChain):
     if '变小' in message.toString() or 'mini' in message.toString():
+        threshold = [int(s) for s in message.toString().split() if s.isdigit()] or [48, 24, 10]
         image: T.Optional[Image] = message.getFirstComponent(Image)
         if image and image.url:
-            threshold = [48, 24, 10]
             async with aiohttp.request('GET', image.url) as resp:
                 img = im.open(BytesIO(await resp.read()))
 
             width, height = img.size
-            if min(width, height) < 25:
-                await app.sendGroupMessage(group, '太小了')
+            if min(width, height) < min(threshold):
+                help_msg = "指令错误 \n格式：mini [自定义边长限制](可选) [图片] 或 变小 [自定义边长限制](可选) [图片] \n图片尺寸不得小于边长限制（默认10像素）"
+                await app.sendGroupMessage(group, [Plain(help_msg)])
             else:
                 img_queue = []
                 for limit in threshold:
