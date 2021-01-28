@@ -14,7 +14,6 @@ def roll(sides):
 async def dice(app: Mirai, group: Group, message: GroupMessage):
     if 'roll' in message.toString():
         sender: Member = message.sender
-        group: Group = message.sender.group
         source: Source = message.messageChain.getSource()
         throw = message.toString().strip().lstrip("roll")
         pattern = re.compile(r'\s*((?P<count>[0-9]*)\s*([dD]))?\s*(?P<sides>[0-9]+)')
