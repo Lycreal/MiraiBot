@@ -90,8 +90,7 @@ class BaseChannel(abc.ABC):
             file = e.__traceback__.tb_next.tb_frame.f_globals["__file__"]
             lineno = e.__traceback__.tb_next.tb_lineno
             raise ChannelResolveError(
-                f'Error while fetching channel information: {self.ch_name or self.cid}\n'
-                f'    File "{file}", line {lineno}\n'
+                f'[{file}][{lineno}] Error while fetching channel information: {self.ch_name or self.cid}\n'
                 f'  {e.__class__.__name__}: {str(e)}'
             ) from e
 

@@ -145,7 +145,7 @@ async def execute(app: Mirai, monitor: Monitor) -> None:
                     EventLogger.error(e)
 
     except ChannelResolveError as e:
-        EventLogger.error(e)
+        EventLogger.warning(e)
     except Exception:
         EventLogger.error(traceback.format_exc())
 
