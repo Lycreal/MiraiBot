@@ -1,4 +1,5 @@
-kuriyama==0.3.6
+# kuriyama==0.3.6
+https://github.com/Lycreal/python-mirai/archive/refs/heads/fix-GroupImage.zip
 pillow==7.2.0
 lxml==4.6.2
 aiohttp==3.6.2
