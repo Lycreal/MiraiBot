@@ -9,5 +9,5 @@ if __name__ == '__main__':
         app.run()
     else:
         print(f'Usage: python3 {sys.argv[0]} mirai://localhost:8080/ws?authKey=$authKey&qq=$qq\n\n'
-              'Visit https://mirai-py.originpages.com/tutorial/hello-world.html#hello-world-2 for more details.')
+              'Visit https://natriumlab.github.io/tutorial/hello-world.html#hello-world-2 for more details.')
         exit(1)

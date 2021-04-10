@@ -1,9 +1,10 @@
-aiohttp
-kuriyama==0.3.6
-pillow==7.2.0
-lxml==4.5.2
-aiohttp==3.6.2
-pydantic==1.6.1
+# kuriyama==0.3.6
+https://github.com/Lycreal/python-mirai/archive/refs/heads/fix-GroupImage.zip
+
+pillow>=8.1.1
+lxml~=4.6.2
+aiohttp~=3.7.4
+pydantic~=1.6.1
 
 # pytest
 # pytest-asyncio

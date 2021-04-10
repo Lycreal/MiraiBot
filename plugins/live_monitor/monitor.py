@@ -25,7 +25,7 @@ class Monitor:
         self.database.save(self.save_file)
         for channel in self.channels:
             if channel.cid == cid:
-                return False
+                return True
         else:
             self.channels.append(self.channel(cid))
             return True

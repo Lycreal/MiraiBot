@@ -28,27 +28,35 @@ class YoutubeChannel(BaseChannel):
             vid = shareVideoEndpoint['videoId']
             title = shareVideoEndpoint['videoTitle']
             live_url = shareVideoEndpoint['videoShareUrl']
-        elif script := ''.join(tree.xpath('//div[@id="player-wrap"]/script[contains(text(),"player_response")]/text()')):
-            script = re.search(r'ytplayer.config = ({.*?});', script)[1]
-            script = json.loads(script)['args']['player_response']
-            videoDetails: Dict[str, Any] = json.loads(script)['videoDetails']
+        elif 'videoDetails' in content:
+            try:
+                script = ''.join(
+                    tree.xpath('//div[@id="player-wrap"]/script[contains(text(),"player_response")]/text()'))
+                script = re.search(r'ytplayer.config = ({.*?});', script)[1]
+                script = json.loads(script)['args']['player_response']
+                videoDetails: Dict[str, Any] = json.loads(script)['videoDetails']
+            except:
+                script = ''.join(tree.xpath('body/script[contains(text(),"ytInitialPlayerResponse")]/text()'))
+                try:
+                    script = re.search(r'var ytInitialPlayerResponse = ({.*});', script)[1]
+                    videoDetails = json.loads(script)['videoDetails']
+                except:
+                    script = re.search(r'window\["ytInitialPlayerResponse"] = (.*?);', script)[1]
+                    videoDetails = json.loads(script)['videoDetails']
 
             self.ch_name = videoDetails['author']
             live_status = videoDetails.get('isLive', 0)
             title = videoDetails['title']
             vid = videoDetails['videoId']
             live_url = f'https://youtu.be/{vid}'
-        elif script := ''.join(tree.xpath('body/script[contains(text(),"ytInitialPlayerResponse")]/text()')):
-            script = re.search(r'window\["ytInitialPlayerResponse"\] = (.*);', script)[1]
-            videoDetails = json.loads(script)['videoDetails']
-
-            self.ch_name = videoDetails['author']
-            live_status = videoDetails.get('isLive', 0)
-            title = videoDetails['title']
-            vid = videoDetails['videoId']
-            live_url = f'https://youtu.be/{vid}'
+        elif '"isLive":true' not in content:
+            return LiveCheckResponse(name=self.ch_name,
+                                     live_status=0,
+                                     title='',
+                                     url=self.api_url,
+                                     cover=None)
         else:
-            raise AssertionError
+            raise AssertionError('获取直播间信息失败')
 
         return LiveCheckResponse(name=self.ch_name,
                                  live_status=live_status,
