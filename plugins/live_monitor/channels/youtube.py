@@ -49,8 +49,14 @@ class YoutubeChannel(BaseChannel):
             title = videoDetails['title']
             vid = videoDetails['videoId']
             live_url = f'https://youtu.be/{vid}'
+        elif '"isLive":true' not in content:
+            return LiveCheckResponse(name=self.ch_name,
+                                     live_status=0,
+                                     title='',
+                                     url=self.api_url,
+                                     cover=None)
         else:
-            raise AssertionError('获取直播间信息失败，可能处于未开播状态')
+            raise AssertionError('获取直播间信息失败')
 
         return LiveCheckResponse(name=self.ch_name,
                                  live_status=live_status,
