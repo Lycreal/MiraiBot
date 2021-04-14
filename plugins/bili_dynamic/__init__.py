@@ -77,7 +77,7 @@ async def GMHandler(app: Mirai, message: GroupMessage):
 
 @sub_app.subroutine
 async def execute(app: Mirai) -> None:
-    delay = 10
+    delay = 20
     while True:
         targets = Database.load().__root__
         if not targets:

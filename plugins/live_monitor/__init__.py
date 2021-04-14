@@ -158,6 +158,6 @@ monitors: T.Dict[ChannelTypes, Monitor] = {
         ChannelTypes.cc_live
     ]
 }
-sub_app.subroutine(wrapper(ChannelTypes.bili_live, 5))
+sub_app.subroutine(wrapper(ChannelTypes.bili_live, 10))
 sub_app.subroutine(wrapper(ChannelTypes.youtube_live, 20))
 sub_app.subroutine(wrapper(ChannelTypes.cc_live, 30))
