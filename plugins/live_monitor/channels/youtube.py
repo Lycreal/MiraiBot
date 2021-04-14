@@ -13,9 +13,72 @@ class YoutubeChannel(BaseChannel):
         return f'https://www.youtube.com/channel/{self.cid}/live'
 
     async def resolve(self, content: str):
-        tree: lxml.html.HtmlElement = lxml.html.fromstring(content)
-        script: str
-        if script := ''.join(tree.xpath('body/script[contains(text(),"RELATED_PLAYER_ARGS")]/text()')):
+        if '"isLive":true' not in content and self.cid in content:
+            return LiveCheckResponse(
+                name=self.ch_name,
+                live_status=0,
+                title='',
+                url=self.api_url,
+                cover=None
+            )
+
+        if resp := self.parse_html_1(content):
+            return resp
+        elif resp := self.parse_html_2(content):
+            return resp
+        elif resp := self.parse_html_3(content):
+            return resp
+        elif resp := self.parse_html_4(content):
+            return resp
+        else:
+            # ========== DEBUG ==========
+            import os
+            from config import data_path
+            debug_filepath = os.path.join(data_path, 'youtube_live_debug.html')
+            with open(debug_filepath, 'w', encoding='utf8') as f:
+                f.write(content)
+            # ========== DEBUG ==========
+
+            raise AssertionError(f'获取直播间信息失败, html页面保存至{debug_filepath}')
+
+    def parse_html_1(self, content: str):
+        if 'videoDetails' in content:
+            try:
+                tree: lxml.html.HtmlElement = lxml.html.fromstring(content)
+                script = ''.join(tree.xpath('body/script[contains(text(),"ytInitialPlayerResponse")]/text()'))
+                script = re.search(r'var ytInitialPlayerResponse = ({.*});', script)[1]
+                videoDetails = json.loads(script)['videoDetails']
+                return self.parse_videoDetails(videoDetails)
+            except:
+                return None
+
+    def parse_html_2(self, content: str):
+        if 'videoDetails' in content:
+            try:
+                tree: lxml.html.HtmlElement = lxml.html.fromstring(content)
+                script = ''.join(tree.xpath('body/script[contains(text(),"ytInitialPlayerResponse")]/text()'))
+                script = re.search(r'window\["ytInitialPlayerResponse"] = ({.*?});', script)[1]
+                videoDetails = json.loads(script)['videoDetails']
+                return self.parse_videoDetails(videoDetails)
+            except:
+                return None
+
+    def parse_html_3(self, content: str):
+        if 'videoDetails' in content:
+            try:
+                tree: lxml.html.HtmlElement = lxml.html.fromstring(content)
+                script = ''.join(tree.xpath('//div[@id="player-wrap"]/script[contains(text(),"player_response")]/text()'))
+                script = re.search(r'ytplayer.config = ({.*?});', script)[1]
+                script = json.loads(script)['args']['player_response']
+                videoDetails: Dict[str, Any] = json.loads(script)['videoDetails']
+                return self.parse_videoDetails(videoDetails)
+            except:
+                return None
+
+    def parse_html_4(self, content: str):
+        try:
+            tree: lxml.html.HtmlElement = lxml.html.fromstring(content)
+            script = ''.join(tree.xpath('body/script[contains(text(),"RELATED_PLAYER_ARGS")]/text()'))
             script = re.search(r'\'RELATED_PLAYER_ARGS\':(.*),', script)[1]
             watch_next_response: Dict[str, Any] = json.loads(json.loads(script)['watch_next_response'])
 
@@ -28,38 +91,26 @@ class YoutubeChannel(BaseChannel):
             vid = shareVideoEndpoint['videoId']
             title = shareVideoEndpoint['videoTitle']
             live_url = shareVideoEndpoint['videoShareUrl']
-        elif 'videoDetails' in content:
-            try:
-                script = ''.join(
-                    tree.xpath('//div[@id="player-wrap"]/script[contains(text(),"player_response")]/text()'))
-                script = re.search(r'ytplayer.config = ({.*?});', script)[1]
-                script = json.loads(script)['args']['player_response']
-                videoDetails: Dict[str, Any] = json.loads(script)['videoDetails']
-            except:
-                script = ''.join(tree.xpath('body/script[contains(text(),"ytInitialPlayerResponse")]/text()'))
-                try:
-                    script = re.search(r'var ytInitialPlayerResponse = ({.*});', script)[1]
-                    videoDetails = json.loads(script)['videoDetails']
-                except:
-                    script = re.search(r'window\["ytInitialPlayerResponse"] = (.*?);', script)[1]
-                    videoDetails = json.loads(script)['videoDetails']
+            return LiveCheckResponse(
+                name=self.ch_name,
+                live_status=live_status,
+                title=title,
+                url=live_url,
+                cover=f'https://i.ytimg.com/vi/{vid}/hq720.jpg'
+            )
+        except:
+            return None
 
-            self.ch_name = videoDetails['author']
-            live_status = videoDetails.get('isLive', 0)
-            title = videoDetails['title']
-            vid = videoDetails['videoId']
-            live_url = f'https://youtu.be/{vid}'
-        elif '"isLive":true' not in content:
-            return LiveCheckResponse(name=self.ch_name,
-                                     live_status=0,
-                                     title='',
-                                     url=self.api_url,
-                                     cover=None)
-        else:
-            raise AssertionError('获取直播间信息失败')
-
-        return LiveCheckResponse(name=self.ch_name,
-                                 live_status=live_status,
-                                 title=title,
-                                 url=live_url,
-                                 cover=f'https://i.ytimg.com/vi/{vid}/hq720.jpg')
+    def parse_videoDetails(self, videoDetails: dict):
+        self.ch_name = videoDetails['author']
+        live_status = videoDetails.get('isLive', 0)
+        title = videoDetails['title']
+        vid = videoDetails['videoId']
+        live_url = f'https://youtu.be/{vid}'
+        return LiveCheckResponse(
+            name=self.ch_name,
+            live_status=live_status,
+            title=title,
+            url=live_url,
+            cover=f'https://i.ytimg.com/vi/{vid}/hq720.jpg'
+        )
