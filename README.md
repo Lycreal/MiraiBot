@@ -27,7 +27,7 @@ MiraiBot
 4. `python3 run.py "mirai://localhost:8080/ws?authKey=<authKey>&qq=<qq号>"`
 
 ### 经过测试的运行环境
-[fix-GroupImage](https://github.com/Lycreal/python-mirai/tree/fix-GroupImage)
+[bugfix-2021](https://github.com/Lycreal/python-mirai/tree/bugfix-2021)
 ```plain
 mirai-core-all-2.5.0
 mirai-console-2.5.0
