@@ -49,4 +49,9 @@ mirai-api-http-v1.7.2
 - [python-mirai](https://github.com/GreyElaina/python-mirai)
 
 ## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLycreal%2FMiraiBot.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FLycreal%2FMiraiBot?ref=badge_shield)
+
 [GNU AGPLv3](LICENSE)
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLycreal%2FMiraiBot.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FLycreal%2FMiraiBot?ref=badge_large)
