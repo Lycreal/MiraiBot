@@ -6,6 +6,8 @@ MiraiBot
 
 基于 [mirai](https://github.com/mamoe/mirai) 内核和 [python-mirai](https://github.com/GreyElaina/python-mirai) 接口的QQ机器人。
 
+Also see: [Lycreal/cqbot](https://github.com/Lycreal/cqbot)
+
 ### 功能
 
 - [使用说明](plugins/help)
